@@ -26,7 +26,6 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<!-- Camera permission -->
 	<key>NSCameraUsageDescription</key>
 	<string>This app needs camera access to scan receipts.</string>
 	<key>NSMicrophoneUsageDescription</key>

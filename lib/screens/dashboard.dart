@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:receipt_scanner/screens/scan_receipts.dart';
+import 'package:camera/camera.dart';
+import 'scan_receipts.dart';
 
 class DashboardPage extends StatelessWidget {
-  const DashboardPage({super.key});
+  final List<CameraDescription> cameras;
+
+  const DashboardPage({required this.cameras, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +25,9 @@ class DashboardPage extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => ScanReceiptPage()),
+                    MaterialPageRoute(
+                      builder: (_) => ScanReceiptPage(cameras: cameras),
+                    ),
                   );
                 },
                 icon: Icon(Icons.camera_alt),
