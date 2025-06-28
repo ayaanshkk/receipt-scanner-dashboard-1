@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../theme_provider.dart';
 
 class SettingsPage extends StatefulWidget {
   @override
@@ -12,10 +14,36 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    String _selectedTheme = themeProvider.themeMode == ThemeMode.light
+        ? 'Light'
+        : themeProvider.themeMode == ThemeMode.dark
+            ? 'Dark'
+            : 'System';
+
     return Scaffold(
       appBar: AppBar(title: Text('Settings')),
       body: ListView(
         children: [
+          ListTile(
+            title: Text('Theme Mode'),
+            trailing: DropdownButton<String>(
+              value: _selectedTheme,
+              items: [
+                DropdownMenuItem(value: 'Light', child: Text('Light')),
+                DropdownMenuItem(value: 'Dark', child: Text('Dark')),
+                DropdownMenuItem(value: 'System', child: Text('System')),
+              ],
+              onChanged: (value) {
+                final themeMode = value == 'Light'
+                    ? ThemeMode.light
+                    : value == 'Dark'
+                        ? ThemeMode.dark
+                        : ThemeMode.system;
+                themeProvider.setThemeMode(themeMode);
+              },
+            ),
+          ),
           SwitchListTile(
             title: Text('Large Text'),
             subtitle: Text('Increase text size for better readability'),
@@ -24,7 +52,6 @@ class _SettingsPageState extends State<SettingsPage> {
             onChanged: (value) {
               setState(() {
                 _largeText = value;
-                // Apply text size change (simulated)
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('Large Text: $value')),
                 );
@@ -39,7 +66,6 @@ class _SettingsPageState extends State<SettingsPage> {
             onChanged: (value) {
               setState(() {
                 _highContrast = value;
-                // Apply contrast change (simulated)
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('High Contrast: $value')),
                 );
@@ -54,7 +80,6 @@ class _SettingsPageState extends State<SettingsPage> {
             onChanged: (value) {
               setState(() {
                 _notifications = value;
-                // Toggle notifications (simulated)
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('Notifications: $value')),
                 );

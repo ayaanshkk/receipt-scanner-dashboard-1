@@ -36,23 +36,26 @@ class ImageReviewPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
+      body: Column(
         children: [
-          Positioned.fill(child: Image.file(imageFile, fit: BoxFit.cover)),
-          Positioned(
-            bottom: 50,
-            left: 50,
-            child: IconButton(
-              icon: Icon(Icons.close_rounded, size: 50, color: Colors.red),
-              onPressed: () => Navigator.pop(context),
-            ),
+          Expanded(
+            child: Image.file(imageFile, fit: BoxFit.cover),
           ),
-          Positioned(
-            bottom: 50,
-            right: 50,
-            child: IconButton(
-              icon: Icon(Icons.check_rounded, size: 50, color: Colors.green),
-              onPressed: () => _sendImage(context),
+          Container(
+            height: 80,
+            color: Theme.of(context).primaryColor,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                IconButton(
+                  icon: Icon(Icons.close_rounded, color: Colors.white, size: 40),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                IconButton(
+                  icon: Icon(Icons.check_rounded, color: Colors.white, size: 40),
+                  onPressed: () => _sendImage(context),
+                ),
+              ],
             ),
           ),
         ],

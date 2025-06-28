@@ -101,21 +101,23 @@ class _ScanReceiptPageState extends State<ScanReceiptPage> {
             ),
           ),
           Positioned(
-            bottom: 50,
+            bottom: 0,
             left: 0,
             right: 0,
-            child: Center(
-              child: GestureDetector(
-                onTap: _captureImage,
-                child: Container(
-                  width: 70,
-                  height: 70,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white,
-                    border: Border.all(color: Colors.blue, width: 2),
+            child: Container(
+              height: 80,
+              color: Theme.of(context).primaryColor,
+              child: Center(
+                child: GestureDetector(
+                  onTap: _captureImage,
+                  child: Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                    ),
                   ),
-                  child: Icon(Icons.camera_alt_rounded, color: Colors.blue, size: 40),
                 ),
               ),
             ),

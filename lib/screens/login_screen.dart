@@ -13,43 +13,42 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final _emailController = TextEditingController();
+  final _userIdController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  // Test credentials for local validation
   final Map<String, String> _testCredentials = {
     'testuser1': 'password123',
     'testuser2': 'password456',
   };
 
   void _handleLogin() {
-    final email = _emailController.text.trim();
+    final userId = _userIdController.text.trim();
     final password = _passwordController.text.trim();
 
-    if (email.isEmpty || password.isEmpty) {
+    if (userId.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter Email and Password')),
+        const SnackBar(content: Text('Please enter User ID and Password')),
       );
       return;
     }
 
-    if (_testCredentials.containsKey(email) && _testCredentials[email] == password) {
+    if (_testCredentials.containsKey(userId) && _testCredentials[userId] == password) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => MainScreen(cameras: widget.cameras, userId: email),
+          builder: (_) => MainScreen(cameras: widget.cameras, userId: userId),
         ),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Invalid Email or Password')),
+        const SnackBar(content: Text('Invalid User ID or Password')),
       );
     }
   }
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _userIdController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -59,21 +58,35 @@ class _LoginPageState extends State<LoginPage> {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
 
-    final emailTop = screenHeight * 0.356;
-    final passwordTop = screenHeight * 0.473;
-    final buttonTop = screenHeight * 0.612;
-    final footerTop = screenHeight * 0.725;
+    final headerTop = screenHeight * 0.1;
+    final userIdTop = screenHeight * 0.25;
+    final passwordTop = screenHeight * 0.35;
+    final buttonTop = screenHeight * 0.45;
+    final footerTop = screenHeight * 0.55;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SingleChildScrollView(
         child: SizedBox(
           height: screenHeight,
           child: Stack(
             children: [
               Positioned(
+                top: headerTop,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Text(
+                    'Login',
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                ),
+              ),
+              Positioned(
                 left: 27,
-                top: emailTop,
+                top: userIdTop,
                 child: SizedBox(
                   width: screenWidth - 54,
                   child: Column(
@@ -82,35 +95,23 @@ class _LoginPageState extends State<LoginPage> {
                       Opacity(
                         opacity: 0.80,
                         child: Text(
-                          'Email Address',
-                          style: TextStyle(
-                            color: const Color(0xFF323232),
-                            fontSize: 14,
-                            fontFamily: 'Colfax',
-                            fontWeight: FontWeight.w400,
-                            height: 1.29,
-                          ),
+                          'User ID',
+                          style: Theme.of(context).textTheme.bodyMedium,
                         ),
                       ),
                       const SizedBox(height: 8),
                       TextField(
-                        controller: _emailController,
-                        style: TextStyle(
-                          color: const Color(0xFF0C135A),
-                          fontSize: 16,
-                          fontFamily: 'Colfax',
-                          fontWeight: FontWeight.w400,
-                          height: 1.12,
-                        ),
-                        decoration: const InputDecoration(
+                        controller: _userIdController,
+                        style: Theme.of(context).textTheme.bodyLarge,
+                        decoration: InputDecoration(
                           border: InputBorder.none,
-                          hintText: 'jimmygrammy@gmail.com',
-                          hintStyle: TextStyle(color: Color(0xFF323232)),
+                          hintText: 'Enter your User ID',
+                          hintStyle: Theme.of(context).textTheme.bodyMedium,
                         ),
                       ),
                       Container(
                         height: 1,
-                        decoration: const BoxDecoration(color: Color(0xFF323232)),
+                        color: Theme.of(context).dividerColor,
                       ),
                     ],
                   ),
@@ -128,35 +129,23 @@ class _LoginPageState extends State<LoginPage> {
                         opacity: 0.80,
                         child: Text(
                           'Password',
-                          style: TextStyle(
-                            color: const Color(0xFF323232),
-                            fontSize: 14,
-                            fontFamily: 'Colfax',
-                            fontWeight: FontWeight.w400,
-                            height: 1.29,
-                          ),
+                          style: Theme.of(context).textTheme.bodyMedium,
                         ),
                       ),
                       const SizedBox(height: 8),
                       TextField(
                         controller: _passwordController,
                         obscureText: true,
-                        style: TextStyle(
-                          color: const Color(0xFF0C135A),
-                          fontSize: 16,
-                          fontFamily: 'Colfax',
-                          fontWeight: FontWeight.w400,
-                          height: 1.12,
-                        ),
-                        decoration: const InputDecoration(
+                        style: Theme.of(context).textTheme.bodyLarge,
+                        decoration: InputDecoration(
                           border: InputBorder.none,
-                          hintText: 'Enter New Password',
-                          hintStyle: TextStyle(color: Color(0x80323232)),
+                          hintText: 'Enter Password',
+                          hintStyle: Theme.of(context).textTheme.bodyMedium,
                         ),
                       ),
                       Container(
                         height: 1,
-                        decoration: const BoxDecoration(color: Color(0xFF323232)),
+                        color: Theme.of(context).dividerColor,
                       ),
                     ],
                   ),
@@ -171,18 +160,16 @@ class _LoginPageState extends State<LoginPage> {
                     width: screenWidth - 54,
                     height: 51.91,
                     decoration: ShapeDecoration(
-                      color: const Color(0xFF404CCF),
+                      color: Theme.of(context).primaryColor,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
-                    child: const Center(
+                    child: Center(
                       child: Text(
                         'Login',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 20,
-                          fontFamily: 'Colfax',
                           fontWeight: FontWeight.w400,
-                          height: 0.90,
                           letterSpacing: 0.40,
                         ),
                       ),
@@ -203,44 +190,26 @@ class _LoginPageState extends State<LoginPage> {
                           MaterialPageRoute(builder: (_) => const ForgotPasswordPage()),
                         );
                       },
-                      child: const Text(
+                      child: Text(
                         'Forgot Password?',
-                        style: TextStyle(
-                          color: Color(0xFF323232),
-                          fontSize: 14,
-                          fontFamily: 'Colfax',
-                          fontWeight: FontWeight.w400,
-                          height: 1,
-                          letterSpacing: 0.28,
-                        ),
+                        style: Theme.of(context).textTheme.bodyMedium,
                       ),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 5),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text(
-                          'New User?',
-                          style: TextStyle(
-                            color: Color(0xFF323232),
-                            fontSize: 14,
-                            fontFamily: 'Colfax',
-                            fontWeight: FontWeight.w400,
-                            height: 1,
-                            letterSpacing: 0.28,
-                          ),
+                        Text(
+                          "Don't have an account? ",
+                          style: Theme.of(context).textTheme.bodyMedium,
                         ),
                         TextButton(
                           onPressed: () {},
-                          child: const Text(
-                            'Create Account',
+                          child: Text(
+                            'Sign up',
                             style: TextStyle(
-                              color: Color(0xFF404CCF),
-                              fontSize: 14,
-                              fontFamily: 'Colfax',
+                              color: Theme.of(context).primaryColor,
                               fontWeight: FontWeight.w500,
-                              height: 1,
-                              letterSpacing: 0.28,
                             ),
                           ),
                         ),

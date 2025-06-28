@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'settings_page.dart';
 import 'login_screen.dart';
+import 'help_support_page.dart';
 
 class AppDrawer extends StatelessWidget {
   final String userId;
@@ -17,13 +18,10 @@ class AppDrawer extends StatelessWidget {
             accountName: Text(userId),
             accountEmail: Text('$userId@example.com'),
             currentAccountPicture: CircleAvatar(
-              backgroundColor: Colors.blue,
-              child: Text(
-                userId[0].toUpperCase(),
-                style: TextStyle(fontSize: 24, color: Colors.white),
-              ),
+              backgroundColor: Theme.of(context).primaryColor,
+              child: Icon(Icons.person, size: 40, color: Colors.white),
             ),
-            decoration: BoxDecoration(color: Colors.blue),
+            decoration: BoxDecoration(color: Theme.of(context).primaryColor),
           ),
           ListTile(
             leading: Icon(Icons.settings_rounded),
@@ -33,6 +31,17 @@ class AppDrawer extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => SettingsPage()),
+              );
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.help_rounded),
+            title: Text('Help and Support'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => HelpSupportPage()),
               );
             },
           ),
