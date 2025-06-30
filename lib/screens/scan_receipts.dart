@@ -10,7 +10,7 @@ import 'package:image_picker/image_picker.dart';
 import 'results_screen.dart';
 
 // Configurable server URL
-const String serverUrl = 'http://192.168.0.66:3000/ocr'; // For Android emulator
+const String serverUrl = 'http://192.168.0.66:3000/ocr'; // For Android emulator-
 
 class ScanReceiptPage extends StatefulWidget {
   final List cameras;
