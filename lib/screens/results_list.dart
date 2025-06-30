@@ -1,7 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'results_screen.dart'; // Assuming it's in the same folder or adjust import accordingly
+import 'package:camera/camera.dart';
+import 'package:receipt_scanner/screens/scan_receipts.dart';
 
 class ReceiptEntry {
   final File imageFile;
@@ -24,10 +25,12 @@ class ReceiptEntry {
 class ResultsListScreen extends StatefulWidget {
   final List<ReceiptEntry> initialEntries;
   final Function(List<ReceiptEntry>)? onEntriesChanged;
+  final List<CameraDescription> cameras; // Added cameras parameter
 
   const ResultsListScreen({
-    super.key, 
+    super.key,
     required this.initialEntries,
+    required this.cameras,
     this.onEntriesChanged,
   });
 
@@ -76,7 +79,7 @@ class _ResultsListScreenState extends State<ResultsListScreen> {
       _allEntries.add(entry);
       _filterEntries();
     });
-    
+
     // Notify parent about the change
     if (widget.onEntriesChanged != null) {
       widget.onEntriesChanged!(_allEntries);
@@ -88,7 +91,7 @@ class _ResultsListScreenState extends State<ResultsListScreen> {
       _allEntries.remove(entry);
       _filterEntries();
     });
-    
+
     // Notify parent about the change
     if (widget.onEntriesChanged != null) {
       widget.onEntriesChanged!(_allEntries);
@@ -96,11 +99,10 @@ class _ResultsListScreenState extends State<ResultsListScreen> {
   }
 
   String _formatCurrency(String currency, String total) {
-  // Prevent double currency symbol (e.g., ££)
-  final hasSymbol = RegExp(r'^[£$€]').hasMatch(total.trim());
-  return hasSymbol ? total : '$currency $total';
-}
-
+    // Prevent double currency symbol (e.g., ££)
+    final hasSymbol = RegExp(r'^[£$€]').hasMatch(total.trim());
+    return hasSymbol ? total : '$currency $total';
+  }
 
   Map<String, List<ReceiptEntry>> _groupByDate(List<ReceiptEntry> entries) {
     final Map<String, List<ReceiptEntry>> map = {};
@@ -122,13 +124,12 @@ class _ResultsListScreenState extends State<ResultsListScreen> {
   }
 
   Future<void> _navigateToAddEntry() async {
-    // Navigate to ResultScreen with empty initial data & a placeholder image file
-    // You'll want to provide an actual image file or image picker integration here
+    // Navigate to ScanReceiptPage
     final result = await Navigator.of(context).push<ReceiptEntry>(
       MaterialPageRoute(
-        builder: (_) => ResultScreen(
-          data: '{}', // empty JSON as initial
-          imageFile: File(''), // TODO: provide a valid image file or pick image flow
+        builder: (_) => ScanReceiptPage(
+          cameras: widget.cameras,
+          onEntryAdded: _addEntry,
         ),
       ),
     );
@@ -151,7 +152,7 @@ class _ResultsListScreenState extends State<ResultsListScreen> {
       appBar: AppBar(
         automaticallyImplyLeading: false,
         toolbarHeight: 0, // Effectively hides the AppBar
-    ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -212,98 +213,101 @@ class _ResultsListScreenState extends State<ResultsListScreen> {
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _navigateToAddEntry,
+        child: const Icon(Icons.add),
+      ),
     );
   }
 
-Widget _buildReceiptCard(ReceiptEntry entry, Color cardColor, bool isDark) {
-  final textColour = isDark ? Colors.white : Colors.black;
-  final borderColour = isDark ? Colors.white : Colors.black;
+  Widget _buildReceiptCard(ReceiptEntry entry, Color cardColor, bool isDark) {
+    final textColour = isDark ? Colors.white : Colors.black;
+    final borderColour = isDark ? Colors.white : Colors.black;
 
-  return Card(
-    color: cardColor,
-    margin: const EdgeInsets.symmetric(vertical: 8),
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-    elevation: 2,
-    child: SizedBox(
-      height: 90,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Receipt image
-          ClipRRect(
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(16),
-              bottomLeft: Radius.circular(16),
-            ),
-            child: SizedBox(
-              width: 90,
-              child: entry.imageFile.path.isNotEmpty
-                  ? Image.file(entry.imageFile, fit: BoxFit.cover)
-                  : Container(
-                      color: Colors.grey[300],
-                      child: const Icon(Icons.image_not_supported, size: 40, color: Colors.grey),
-                    ),
-            ),
-          ),
-          const SizedBox(width: 12),
-
-          // Receipt details
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Text(
-                    entry.merchant,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      color: textColour,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    _formatCurrency(entry.currency, entry.total),
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: textColour,
-                    ),
-                  ),
-                ],
+    return Card(
+      color: cardColor,
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 2,
+      child: SizedBox(
+        height: 90,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Receipt image
+            ClipRRect(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(16),
+                bottomLeft: Radius.circular(16),
+              ),
+              child: SizedBox(
+                width: 90,
+                child: entry.imageFile.path.isNotEmpty
+                    ? Image.file(entry.imageFile, fit: BoxFit.cover)
+                    : Container(
+                        color: Colors.grey[300],
+                        child: const Icon(Icons.image_not_supported, size: 40, color: Colors.grey),
+                      ),
               ),
             ),
-          ),
+            const SizedBox(width: 12),
 
-          // Category badge
-Padding(
-  padding: const EdgeInsets.only(right: 12, top: 12),
-  child: Align(
-    alignment: Alignment.topRight,
-    child: Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        border: Border.all(color: borderColour.withOpacity(0.54)),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Text(
-        entry.category,
-        style: const TextStyle(
-          fontSize: 10, // As you requested
-          fontWeight: FontWeight.w500,
+            // Receipt details
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Text(
+                      entry.merchant,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        color: textColour,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      _formatCurrency(entry.currency, entry.total),
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: textColour,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // Category badge
+            Padding(
+              padding: const EdgeInsets.only(right: 12, top: 12),
+              child: Align(
+                alignment: Alignment.topRight,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: borderColour.withOpacity(0.54)),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Text(
+                    entry.category,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
-    ),
-  ),
-),
-        ],
-      ),
-    ),
-  );
-}
-
+    );
+  }
 
   void _showDeleteConfirmation(ReceiptEntry entry) {
     showDialog(

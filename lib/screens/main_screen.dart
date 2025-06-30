@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import 'package:receipt_scanner/screens/home_page.dart' as home; // Alias to resolve conflict
+import 'package:receipt_scanner/screens/home_page.dart' as home;
 import 'package:receipt_scanner/screens/results_list.dart';
 import 'package:receipt_scanner/screens/account_page.dart';
 import 'package:receipt_scanner/screens/scan_receipts.dart';
@@ -39,12 +39,14 @@ class _MainScreenState extends State<MainScreen> {
       home.HomePage(
         userId: widget.userId,
         cameras: widget.cameras,
-        onEntryAdded: _addReceiptEntry, // Pass callback
+        onEntryAdded: _addReceiptEntry,
+        receiptEntries: _receiptEntries, onNavigateToReceiptsTab: () {  },
       ),
       Container(),
       ResultsListScreen(
         initialEntries: _receiptEntries,
-        onEntriesChanged: _updateReceiptEntries, cameras: [],
+        cameras: widget.cameras,
+        onEntriesChanged: _updateReceiptEntries,
       ),
       AccountPage(userId: widget.userId),
     ];
@@ -54,8 +56,19 @@ class _MainScreenState extends State<MainScreen> {
   void _updateReceiptEntries(List<ReceiptEntry> newEntries) {
     setState(() {
       _receiptEntries = newEntries;
-      // Don't reinitialize pages here to avoid infinite loop
-      // The ResultsListScreen manages its own state
+      // Update HomePage with new entries
+      _pages[0] = home.HomePage(
+        userId: widget.userId,
+        cameras: widget.cameras,
+        onEntryAdded: _addReceiptEntry,
+        receiptEntries: _receiptEntries, onNavigateToReceiptsTab: () {  },
+      );
+      // Update ResultsListScreen
+      _pages[2] = ResultsListScreen(
+        initialEntries: _receiptEntries,
+        cameras: widget.cameras,
+        onEntriesChanged: _updateReceiptEntries,
+      );
     });
   }
 
@@ -63,10 +76,18 @@ class _MainScreenState extends State<MainScreen> {
   void _addReceiptEntry(ReceiptEntry entry) {
     setState(() {
       _receiptEntries.add(entry);
-      // Update the ResultsListScreen page
+      // Update HomePage with new entries
+      _pages[0] = home.HomePage(
+        userId: widget.userId,
+        cameras: widget.cameras,
+        onEntryAdded: _addReceiptEntry,
+        receiptEntries: _receiptEntries, onNavigateToReceiptsTab: () {  },
+      );
+      // Update ResultsListScreen
       _pages[2] = ResultsListScreen(
         initialEntries: _receiptEntries,
-        onEntriesChanged: _updateReceiptEntries, cameras: [],
+        cameras: widget.cameras,
+        onEntriesChanged: _updateReceiptEntries,
       );
     });
   }
@@ -78,7 +99,7 @@ class _MainScreenState extends State<MainScreen> {
         MaterialPageRoute(
           builder: (_) => ScanReceiptPage(
             cameras: widget.cameras,
-            onEntryAdded: _addReceiptEntry, // Pass callback
+            onEntryAdded: _addReceiptEntry,
           ),
         ),
       );

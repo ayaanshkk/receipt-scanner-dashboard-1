@@ -1,20 +1,189 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:camera/camera.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:http/http.dart' as http;
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:receipt_scanner/screens/scan_receipts.dart';
 import 'package:receipt_scanner/screens/results_list.dart';
+import 'package:receipt_scanner/screens/results_screen.dart';
+import 'dart:convert';
+
+// Configurable server URL
+const String serverUrl = 'http://192.168.0.66:3000/ocr'; // For Android emulator
+// const String serverUrl = 'http://192.168.0.66:3001/ocr'; // For physical devices
 
 class HomePage extends StatelessWidget {
   final String userId;
   final List<CameraDescription> cameras;
-  final Function(ReceiptEntry) onEntryAdded; // Added callback
+  final Function(ReceiptEntry) onEntryAdded;
+  final List<ReceiptEntry> receiptEntries;
+  final VoidCallback onNavigateToReceiptsTab;
 
   const HomePage({
     required this.userId,
     required this.cameras,
-    required this.onEntryAdded, // Added to constructor
+    required this.onEntryAdded,
+    required this.receiptEntries,
+    required this.onNavigateToReceiptsTab,
     super.key,
   });
+
+  Future<void> _uploadReceipts(BuildContext context) async {
+    final ImagePicker picker = ImagePicker();
+    final TextRecognizer textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
+
+    try {
+      // Allow multiple image selection from gallery
+      final List<XFile> images = await picker.pickMultiImage();
+
+      if (images.isNotEmpty) {
+        // Process each image to extract receipt details
+        final List<ReceiptEntry> newEntries = [];
+        for (var image in images) {
+          final File imageFile = File(image.path);
+
+          // Perform OCR on the image
+          final inputImage = InputImage.fromFilePath(image.path);
+          final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
+          final String rawText = recognizedText.text;
+          print('OCR Text: $rawText'); // Log OCR output for debugging
+
+          // Send the extracted text to the backend server
+          final response = await http.post(
+            Uri.parse(serverUrl),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({'text': rawText}),
+          ).timeout(
+            const Duration(seconds: 10), // Add timeout to catch network issues
+            onTimeout: () {
+              throw Exception('Request timed out. Check server at $serverUrl');
+            },
+          );
+
+          print('Server Response: Status ${response.statusCode}, Body: ${response.body}'); // Log server response
+
+          if (response.statusCode == 200) {
+            final String responseBody = response.body;
+
+            if (!context.mounted) return;
+
+            // Navigate to ResultScreen and await the returned ReceiptEntry
+            final ReceiptEntry? result = await Navigator.push<ReceiptEntry>(
+              context,
+              MaterialPageRoute(
+                builder: (_) => ResultScreen(
+                  data: responseBody,
+                  imageFile: imageFile,
+                ),
+              ),
+            );
+
+            // If user confirmed and a result was returned, add it
+            if (result != null) {
+              newEntries.add(result);
+            }
+          } else {
+            Fluttertoast.showToast(
+              msg: 'Server error for image: ${response.statusCode}. Using local OCR parsing.',
+            );
+            // Fallback: Parse total locally
+            String total = '0.00';
+            String? date;
+            String? merchant;
+            for (var block in recognizedText.blocks) {
+              final text = block.text.toLowerCase();
+              // Extract total
+              if (text.contains('total') || text.contains('amount')) {
+                final lines = block.text.split('\n');
+                for (var line in lines) {
+                  final match = RegExp(r'(?:£|\$|€)?\s*(\d+\.\d{2})').firstMatch(line);
+                  if (match != null) {
+                    total = match.group(1) ?? '0.00';
+                    break;
+                  }
+                }
+              }
+              // Extract merchant (simple heuristic: first line often contains the store name)
+              if (merchant == null && block.text.isNotEmpty) {
+                merchant = block.text.split('\n').first;
+              }
+              // Extract date (look for date patterns like DD/MM/YYYY or YYYY-MM-DD)
+              final dateMatch = RegExp(r'\d{1,2}/\d{1,2}/\d{2,4}|\d{4}-\d{2}-\d{2}').firstMatch(block.text);
+              if (dateMatch != null) {
+                date = dateMatch.group(0);
+              }
+            }
+
+            if (!context.mounted) return;
+
+            final result = ReceiptEntry(
+              imageFile: imageFile,
+              merchant: merchant ?? 'Unknown Store',
+              currency: '£',
+              total: total,
+              category: 'General',
+              date: date != null ? DateTime.tryParse(date) ?? DateTime.now() : DateTime.now(),
+            );
+
+            final confirmedResult = await Navigator.push<ReceiptEntry>(
+              context,
+              MaterialPageRoute(
+                builder: (_) => ResultScreen(
+                  data: jsonEncode({
+                    'establishment': merchant ?? 'Unknown Store',
+                    'total': total,
+                    'currency': '£',
+                    'category': 'General',
+                    'date': date ?? DateTime.now().toIso8601String(),
+                    'VAT': null,
+                    'method_of_payment': null,
+                  }),
+                  imageFile: imageFile,
+                ),
+              ),
+            );
+
+            if (confirmedResult != null) {
+              newEntries.add(confirmedResult);
+            }
+          }
+        }
+
+        // Add each confirmed entry using the callback
+        for (var entry in newEntries) {
+          onEntryAdded(entry);
+        }
+
+        if (newEntries.isNotEmpty && context.mounted) {
+          // Pop back to the main screen and switch to Receipts tab
+          Navigator.popUntil(context, (route) => route.isFirst);
+          onNavigateToReceiptsTab();
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('${newEntries.length} receipt(s) uploaded successfully')),
+          );
+        } else if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No receipts were confirmed. Check server connection.')),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No images selected')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error uploading receipts: $e')),
+      );
+      print('Error details: $e'); // Log full error for debugging
+    } finally {
+      await textRecognizer.close();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -62,26 +231,29 @@ class HomePage extends StatelessWidget {
                   title: 'Create New',
                   icon: CupertinoIcons.plus_circle,
                   iconColor: iconColor,
-                  onTap: () {
-                    // Navigate to ScanReceiptPage with callback
-                    Navigator.push(
+                  onTap: () async {
+                    final result = await Navigator.push<ReceiptEntry>(
                       context,
                       MaterialPageRoute(
                         builder: (_) => ScanReceiptPage(
                           cameras: cameras,
-                          onEntryAdded: onEntryAdded, // Pass callback
+                          onEntryAdded: onEntryAdded,
                         ),
                       ),
                     );
+
+                    if (result != null) {
+                      onEntryAdded(result);
+                      Navigator.popUntil(context, (route) => route.isFirst);
+                      onNavigateToReceiptsTab();
+                    }
                   },
                 ),
                 _HomeActionCard(
                   title: 'Upload Receipt',
                   icon: CupertinoIcons.camera,
                   iconColor: iconColor,
-                  onTap: () {
-                    // TODO: Handle Upload
-                  },
+                  onTap: () => _uploadReceipts(context),
                 ),
                 _HomeActionCard(
                   title: 'View Analytics',
@@ -119,10 +291,10 @@ class HomePage extends StatelessWidget {
             height: 160,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              itemCount: 5,
+              itemCount: receiptEntries.length.clamp(0, 5),
               itemBuilder: (context, index) {
                 final bool isFirst = index == 0;
-                final bool isLast = index == 4;
+                final bool isLast = index == receiptEntries.length - 1;
 
                 return Padding(
                   padding: EdgeInsets.only(
@@ -132,7 +304,7 @@ class HomePage extends StatelessWidget {
                   child: SizedBox(
                     width: 139,
                     height: 160,
-                    child: ReceiptCard(index: index),
+                    child: ReceiptCard(entry: receiptEntries[index]),
                   ),
                 );
               },
@@ -148,9 +320,9 @@ class HomePage extends StatelessWidget {
 
 // Updated ReceiptCard Widget
 class ReceiptCard extends StatelessWidget {
-  final int index;
+  final ReceiptEntry entry;
 
-  const ReceiptCard({required this.index, super.key});
+  const ReceiptCard({required this.entry, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -176,9 +348,6 @@ class ReceiptCard extends StatelessWidget {
       'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
     ];
-
-    final monthIndex = (6 + index) % 12;
-    final day = 25 + index;
 
     return Material(
       color: Colors.transparent,
@@ -209,7 +378,7 @@ class ReceiptCard extends StatelessWidget {
             children: [
               // Date
               Text(
-                '${months[monthIndex]} $day',
+                '${months[entry.date.month - 1]} ${entry.date.day}',
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
@@ -221,7 +390,7 @@ class ReceiptCard extends StatelessWidget {
               
               // Amount
               Text(
-                '£${(100 + index * 10).toStringAsFixed(2)}',
+                '${entry.currency}${entry.total}',
                 style: TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.w700,
@@ -241,7 +410,7 @@ class ReceiptCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  'Store',
+                  entry.merchant,
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
@@ -276,10 +445,9 @@ class _HomeActionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
-    // Apple-style colors
     final cardColor = isDark 
-        ? const Color(0xFF1C1C1E)  // Dark mode card
-        : Colors.white;            // Light mode card
+        ? const Color(0xFF1C1C1E)
+        : Colors.white;
     
     final shadowColor = isDark 
         ? Colors.black.withOpacity(0.3)
@@ -295,7 +463,7 @@ class _HomeActionCard extends StatelessWidget {
         duration: const Duration(milliseconds: 150),
         decoration: BoxDecoration(
           color: cardColor,
-          borderRadius: BorderRadius.circular(16), // Apple's preferred radius
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
               color: shadowColor,
@@ -303,7 +471,7 @@ class _HomeActionCard extends StatelessWidget {
               offset: const Offset(0, 2),
               spreadRadius: 0,
             ),
-            if (!isDark) // Additional subtle shadow for light mode
+            if (!isDark)
               BoxShadow(
                 color: Colors.black.withOpacity(0.04),
                 blurRadius: 4,
@@ -325,7 +493,6 @@ class _HomeActionCard extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Icon with subtle background
                   Container(
                     width: 48,
                     height: 48,
@@ -334,8 +501,8 @@ class _HomeActionCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
-                      icon, 
-                      size: 24, 
+                      icon,
+                      size: 24,
                       color: Theme.of(context).primaryColor,
                     ),
                   ),
@@ -343,10 +510,10 @@ class _HomeActionCard extends StatelessWidget {
                   Text(
                     title,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 15,
-                      letterSpacing: -0.2, // Apple's subtle letter spacing
-                    ),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 15,
+                          letterSpacing: -0.2,
+                        ),
                     textAlign: TextAlign.center,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
