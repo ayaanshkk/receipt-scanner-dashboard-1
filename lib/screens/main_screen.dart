@@ -1,9 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import 'home_page.dart';
-import 'receipts_page.dart';
+import 'results_list.dart';
 import 'account_page.dart';
 import 'scan_receipts.dart';
 import 'app_drawer.dart';
@@ -20,18 +22,49 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
+  
+  // Store receipt entries at the MainScreen level
+  List<ReceiptEntry> _receiptEntries = [];
 
   late final List<Widget> _pages;
 
   @override
   void initState() {
     super.initState();
+    _initializePages();
+  }
+
+  void _initializePages() {
     _pages = [
       HomePage(userId: widget.userId),
       Container(),
-      ReceiptsPage(),
+      ResultsListScreen(
+        initialEntries: _receiptEntries,
+        onEntriesChanged: _updateReceiptEntries,
+      ),
       AccountPage(userId: widget.userId),
     ];
+  }
+
+  // Callback to update receipt entries
+  void _updateReceiptEntries(List<ReceiptEntry> newEntries) {
+    setState(() {
+      _receiptEntries = newEntries;
+      // Don't reinitialize pages here to avoid infinite loop
+      // The ResultsListScreen manages its own state
+    });
+  }
+
+  // Method to add a single entry (called from scan flow)
+  void _addReceiptEntry(ReceiptEntry entry) {
+    setState(() {
+      _receiptEntries.add(entry);
+      // Update the ResultsListScreen page
+      _pages[2] = ResultsListScreen(
+        initialEntries: _receiptEntries,
+        onEntriesChanged: _updateReceiptEntries,
+      );
+    });
   }
 
   void _onTabTapped(int index) {
@@ -39,7 +72,10 @@ class _MainScreenState extends State<MainScreen> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => ScanReceiptPage(cameras: widget.cameras),
+          builder: (_) => ScanReceiptPage(
+            cameras: widget.cameras,
+            onEntryAdded: _addReceiptEntry, // Pass callback
+          ),
         ),
       );
     } else {
@@ -63,17 +99,27 @@ class _MainScreenState extends State<MainScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 64, // Increased title area height from default (56)
+        toolbarHeight: 64,
         leading: Builder(
           builder: (context) => IconButton(
-            icon: SvgPicture.asset('assets/icons/menu-02-solid-standard.svg', width: 26, height: 26, color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black,),
+            icon: SvgPicture.asset(
+              'assets/icons/menu-02-solid-standard.svg',
+              width: 26,
+              height: 26,
+              color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black,
+            ),
             onPressed: () => Scaffold.of(context).openDrawer(),
           ),
         ),
         title: Text(_getTitle(_currentIndex)),
         actions: [
           IconButton(
-            icon: SvgPicture.asset('assets/icons/notification-02-stroke-standard.svg', width: 26, height: 26, color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black,),
+            icon: SvgPicture.asset(
+              'assets/icons/notification-02-stroke-standard.svg',
+              width: 26,
+              height: 26,
+              color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black,
+            ),
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('No new notifications')),
@@ -96,7 +142,6 @@ class _MainScreenState extends State<MainScreen> {
               onTap: () => _onTabTapped(index),
               behavior: HitTestBehavior.opaque,
               child: Container(
-                // Shift icons upward by adding top padding and reducing bottom padding
                 padding: const EdgeInsets.only(top: 16, bottom: 2),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
