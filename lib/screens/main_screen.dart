@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import 'home_page.dart';
-import 'results_list.dart';
-import 'account_page.dart';
-import 'scan_receipts.dart';
-import 'app_drawer.dart';
+import 'package:receipt_scanner/screens/home_page.dart' as home; // Alias to resolve conflict
+import 'package:receipt_scanner/screens/results_list.dart';
+import 'package:receipt_scanner/screens/account_page.dart';
+import 'package:receipt_scanner/screens/scan_receipts.dart';
+import 'package:receipt_scanner/screens/app_drawer.dart';
 
 class MainScreen extends StatefulWidget {
   final List<CameraDescription> cameras;
@@ -36,11 +36,15 @@ class _MainScreenState extends State<MainScreen> {
 
   void _initializePages() {
     _pages = [
-      HomePage(userId: widget.userId),
+      home.HomePage(
+        userId: widget.userId,
+        cameras: widget.cameras,
+        onEntryAdded: _addReceiptEntry, // Pass callback
+      ),
       Container(),
       ResultsListScreen(
         initialEntries: _receiptEntries,
-        onEntriesChanged: _updateReceiptEntries,
+        onEntriesChanged: _updateReceiptEntries, cameras: [],
       ),
       AccountPage(userId: widget.userId),
     ];
@@ -62,7 +66,7 @@ class _MainScreenState extends State<MainScreen> {
       // Update the ResultsListScreen page
       _pages[2] = ResultsListScreen(
         initialEntries: _receiptEntries,
-        onEntriesChanged: _updateReceiptEntries,
+        onEntriesChanged: _updateReceiptEntries, cameras: [],
       );
     });
   }

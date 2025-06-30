@@ -1,132 +1,149 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:camera/camera.dart';
 import 'package:receipt_scanner/screens/scan_receipts.dart';
+import 'package:receipt_scanner/screens/results_list.dart';
 
 class HomePage extends StatelessWidget {
   final String userId;
+  final List<CameraDescription> cameras;
+  final Function(ReceiptEntry) onEntryAdded; // Added callback
 
-  const HomePage({required this.userId, super.key});
+  const HomePage({
+    required this.userId,
+    required this.cameras,
+    required this.onEntryAdded, // Added to constructor
+    super.key,
+  });
 
   @override
-Widget build(BuildContext context) {
-  final isDark = Theme.of(context).brightness == Brightness.dark;
-  final customCardColor = isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF3F5F5);
-  final iconColor = isDark ? Colors.white70 : Colors.black87;
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final customCardColor = isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF3F5F5);
+    final iconColor = isDark ? Colors.white70 : Colors.black87;
 
-  return SingleChildScrollView(
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 34),
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 34),
 
-        // Welcome Row
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 27),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Welcome back',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-              ),
-              const SizedBox(width: 8),
-              Icon(Icons.waving_hand, color: Theme.of(context).primaryColor, size: 30),
-            ],
+          // Welcome Row
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 27),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Welcome back',
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                const SizedBox(width: 8),
+                Icon(Icons.waving_hand, color: Theme.of(context).primaryColor, size: 30),
+              ],
+            ),
           ),
-        ),
 
-        const SizedBox(height: 26),
+          const SizedBox(height: 26),
 
-        // Action Cards Grid
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: GridView.count(
-            crossAxisCount: 2,
-            mainAxisSpacing: 16,
-            crossAxisSpacing: 16,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            children: [
-              _HomeActionCard(
-                title: 'Create New',
-                icon: CupertinoIcons.plus_circle,
-                iconColor: iconColor,
-                onTap: () {
-                  // TODO: Handle Create New
-                },
-              ),
-              _HomeActionCard(
-                title: 'Upload Receipt',
-                icon: CupertinoIcons.camera,
-                iconColor: iconColor,
-                onTap: () {
-                  // TODO: Handle Upload
-                },
-              ),
-              _HomeActionCard(
-                title: 'View Analytics',
-                icon: CupertinoIcons.chart_bar_alt_fill,
-                iconColor: iconColor,
-                onTap: () {
-                  // TODO: Handle Analytics
-                },
-              ),
-              _HomeActionCard(
-                title: 'Export',
-                icon: CupertinoIcons.arrow_up_doc,
-                iconColor: iconColor,
-                onTap: () {
-                  // TODO: Handle Export
-                },
-              ),
-            ],
+          // Action Cards Grid
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: GridView.count(
+              crossAxisCount: 2,
+              mainAxisSpacing: 16,
+              crossAxisSpacing: 16,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              children: [
+                _HomeActionCard(
+                  title: 'Create New',
+                  icon: CupertinoIcons.plus_circle,
+                  iconColor: iconColor,
+                  onTap: () {
+                    // Navigate to ScanReceiptPage with callback
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ScanReceiptPage(
+                          cameras: cameras,
+                          onEntryAdded: onEntryAdded, // Pass callback
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                _HomeActionCard(
+                  title: 'Upload Receipt',
+                  icon: CupertinoIcons.camera,
+                  iconColor: iconColor,
+                  onTap: () {
+                    // TODO: Handle Upload
+                  },
+                ),
+                _HomeActionCard(
+                  title: 'View Analytics',
+                  icon: CupertinoIcons.chart_bar_alt_fill,
+                  iconColor: iconColor,
+                  onTap: () {
+                    // TODO: Handle Analytics
+                  },
+                ),
+                _HomeActionCard(
+                  title: 'Export',
+                  icon: CupertinoIcons.arrow_up_doc,
+                  iconColor: iconColor,
+                  onTap: () {
+                    // TODO: Handle Export
+                  },
+                ),
+              ],
+            ),
           ),
-        ),
 
-        const SizedBox(height: 30),
+          const SizedBox(height: 30),
 
-        // Receipts Header
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 27),
-          child: Text(
-            'Receipts',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+          // Receipts Header
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 27),
+            child: Text(
+              'Receipts',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            ),
           ),
-        ),
-        const SizedBox(height: 10),
+          const SizedBox(height: 10),
 
-        SizedBox(
-  height: 160,
-  child: ListView.builder(
-    scrollDirection: Axis.horizontal,
-    itemCount: 5,
-    itemBuilder: (context, index) {
-      final bool isFirst = index == 0;
-      final bool isLast = index == 4;
+          SizedBox(
+            height: 160,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: 5,
+              itemBuilder: (context, index) {
+                final bool isFirst = index == 0;
+                final bool isLast = index == 4;
 
-      return Padding(
-        padding: EdgeInsets.only(
-          left: isFirst ? 27 : 8,
-          right: isLast ? 27 : 0,
-        ),
-        child: SizedBox(
-          width: 139,
-          height: 160,
-          child: ReceiptCard(index: index),
-        ),
-      );
-    },
-  ),
-),
+                return Padding(
+                  padding: EdgeInsets.only(
+                    left: isFirst ? 27 : 8,
+                    right: isLast ? 27 : 0,
+                  ),
+                  child: SizedBox(
+                    width: 139,
+                    height: 160,
+                    child: ReceiptCard(index: index),
+                  ),
+                );
+              },
+            ),
+          ),
 
-        const SizedBox(height: 30),
-      ],
-    ),
-  );
-}
-
+          const SizedBox(height: 30),
+        ],
+      ),
+    );
+  }
 }
 
 // Updated ReceiptCard Widget
