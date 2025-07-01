@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:http/http.dart' as http;
 import 'package:receipt_scanner/screens/results_list.dart';
@@ -10,7 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import 'results_screen.dart';
 
 // Configurable server URL
-const String serverUrl = 'http://192.168.0.66:3000/ocr'; // For Android emulator-
+const String serverUrl = 'http://192.168.0.66:3000/ocr'; // For Android emulator
 
 class ScanReceiptPage extends StatefulWidget {
   final List cameras;
@@ -27,6 +26,8 @@ class _ScanReceiptPageState extends State<ScanReceiptPage> {
   bool _isFlashOn = false;
   File? _capturedImageFile;
   final TextRecognizer _textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
+  Offset? _focusPoint;
+  bool _showFocusIndicator = false;
 
   @override
   void initState() {
@@ -40,9 +41,12 @@ class _ScanReceiptPageState extends State<ScanReceiptPage> {
       try {
         await _controller!.initialize();
         await _controller!.setFlashMode(FlashMode.off);
+        // Set focus mode to auto initially
+        await _controller!.setFocusMode(FocusMode.auto);
+        await _controller!.setExposureMode(ExposureMode.auto);
         if (mounted) setState(() {});
       } catch (e) {
-        Fluttertoast.showToast(msg: 'Camera initialization error: $e');
+        print('Camera initialization error: $e');
       }
     }
   }
@@ -69,7 +73,65 @@ class _ScanReceiptPageState extends State<ScanReceiptPage> {
       _capturedImageFile = File(image.path);
       if (mounted) setState(() {});
     } catch (e) {
-      Fluttertoast.showToast(msg: 'Error capturing image: $e');
+      print('Error capturing image: $e');
+    }
+  }
+
+  Future _setFocusPoint(Offset point) async {
+    if (_controller == null || !_controller!.value.isInitialized || _capturedImageFile != null) {
+      return;
+    }
+
+    try {
+      // Get screen dimensions
+      final RenderBox renderBox = context.findRenderObject() as RenderBox;
+      final size = renderBox.size;
+      
+      // Convert screen coordinates to normalized coordinates [0.0, 1.0]
+      final double x = (point.dx / size.width).clamp(0.0, 1.0);
+      final double y = (point.dy / size.height).clamp(0.0, 1.0);
+
+      print('Setting focus at screen point: (${point.dx}, ${point.dy})');
+      print('Normalized coordinates: ($x, $y)');
+
+      // Set focus mode to locked to ensure we can control focus manually
+      await _controller!.setFocusMode(FocusMode.locked);
+      
+      // Small delay to ensure mode change takes effect
+      await Future.delayed(Duration(milliseconds: 50));
+      
+      // Set the focus point
+      await _controller!.setFocusPoint(Offset(x, y));
+      
+      // Also set exposure point for better results
+      await _controller!.setExposurePoint(Offset(x, y));
+
+      // Show focus indicator
+      setState(() {
+        _focusPoint = point;
+        _showFocusIndicator = true;
+      });
+
+      // Hide focus indicator after 2 seconds
+      Future.delayed(Duration(seconds: 2), () {
+        if (mounted) {
+          setState(() {
+            _showFocusIndicator = false;
+          });
+        }
+      });
+
+      print('Focus successfully set at normalized coordinates: ($x, $y)');
+      
+    } catch (e) {
+      print('Focus error: $e');
+      // If manual focus fails, fallback to auto focus
+      try {
+        await _controller!.setFocusMode(FocusMode.auto);
+        print('Fallback to auto focus mode');
+      } catch (fallbackError) {
+        print('Fallback focus error: $fallbackError');
+      }
     }
   }
 
@@ -119,9 +181,7 @@ class _ScanReceiptPageState extends State<ScanReceiptPage> {
           if (mounted) Navigator.pop(context); // Go back to main screen
         }
       } else {
-        Fluttertoast.showToast(
-          msg: 'Server error: ${response.statusCode}. Using local OCR parsing.',
-        );
+        print('Server error: ${response.statusCode}. Using local OCR parsing.');
         // Fallback: Parse total locally
         String total = '0.00';
         String? date;
@@ -186,8 +246,7 @@ class _ScanReceiptPageState extends State<ScanReceiptPage> {
         }
       }
     } catch (e) {
-      Fluttertoast.showToast(msg: 'Error processing receipt: $e');
-      print('Error details: $e'); // Log full error for debugging
+      print('Error processing receipt: $e');
     }
   }
 
@@ -205,7 +264,7 @@ class _ScanReceiptPageState extends State<ScanReceiptPage> {
         if (mounted) setState(() {});
       }
     } catch (e) {
-      Fluttertoast.showToast(msg: 'Error picking image: $e');
+      print('Error picking image: $e');
     }
   }
 
@@ -223,7 +282,36 @@ class _ScanReceiptPageState extends State<ScanReceiptPage> {
         children: [
           _capturedImageFile != null
               ? Positioned.fill(child: Image.file(_capturedImageFile!, fit: BoxFit.cover))
-              : CameraPreview(_controller!),
+              : Stack(
+                  children: [
+                    GestureDetector(
+                      onTapDown: (details) {
+                        _setFocusPoint(details.localPosition);
+                      },
+                      child: CameraPreview(_controller!),
+                    ),
+                    if (_showFocusIndicator && _focusPoint != null)
+                      Positioned(
+                        left: _focusPoint!.dx - 30,
+                        top: _focusPoint!.dy - 30,
+                        child: Container(
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.yellow, width: 3),
+                          ),
+                          child: Container(
+                            margin: EdgeInsets.all(15),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.yellow, width: 1),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
           Align(
             alignment: Alignment.bottomCenter,
             child: _capturedImageFile == null ? _buildCameraControls() : _buildPreviewControls(),
@@ -235,7 +323,7 @@ class _ScanReceiptPageState extends State<ScanReceiptPage> {
 
   Widget _buildCameraControls() {
     return Container(
-      height: 100,
+      height: 120,
       padding: const EdgeInsets.symmetric(horizontal: 30),
       decoration: const BoxDecoration(color: Color(0xFF1C1D1F)),
       child: Row(
@@ -268,7 +356,7 @@ class _ScanReceiptPageState extends State<ScanReceiptPage> {
 
   Widget _buildPreviewControls() {
     return Container(
-      height: 100,
+      height: 120,
       padding: const EdgeInsets.symmetric(horizontal: 50),
       decoration: const BoxDecoration(color: Color(0xFF1C1D1F)),
       child: Row(

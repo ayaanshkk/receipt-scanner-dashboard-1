@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'forgot_password.dart';
+import 'settings_page.dart';
+import 'help_support_page.dart';
 
 class AccountPage extends StatelessWidget {
   final String userId;
@@ -52,34 +54,44 @@ class AccountPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('User ID: $userId', style: Theme.of(context).textTheme.bodyLarge),
-                  Text('Email: $userId@example.com', style: Theme.of(context).textTheme.bodyMedium),
                 ],
               ),
             ],
           ),
           SizedBox(height: 30),
-          ElevatedButton.icon(
-            icon: Icon(Icons.lock_reset_rounded),
-            label: Text('Reset Password'),
-            onPressed: () {
+          ListTile(
+            leading: Icon(Icons.lock_reset_rounded, color: Theme.of(context).primaryColor),
+            title: Text('Reset Password', style: Theme.of(context).textTheme.bodyLarge),
+            onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => ForgotPasswordPage()),
               );
             },
-            style: ElevatedButton.styleFrom(
-              foregroundColor: Theme.of(context).textTheme.bodyLarge!.color,
-            ),
           ),
-          SizedBox(height: 10),
-          ElevatedButton.icon(
-            icon: Icon(Icons.photo_camera_rounded),
-            label: Text('Set Profile Photo'),
-            onPressed: () => _pickProfilePhoto(context),
-            style: ElevatedButton.styleFrom(
-              foregroundColor: Theme.of(context).textTheme.bodyLarge!.color,
-            ),
+          Divider(color: Colors.grey.shade400, thickness: 1),
+          ListTile(
+            leading: Icon(Icons.settings_rounded, color: Theme.of(context).primaryColor),
+            title: Text('Settings', style: Theme.of(context).textTheme.bodyLarge),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => SettingsPage()),
+              );
+            },
           ),
+          Divider(color: Colors.grey.shade400, thickness: 1),
+          ListTile(
+            leading: Icon(Icons.support_agent_rounded, color: Theme.of(context).primaryColor),
+            title: Text('Help & Support', style: Theme.of(context).textTheme.bodyLarge),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => HelpSupportPage()),
+              );
+            },
+          ),
+          Divider(color: Colors.grey.shade400, thickness: 1),
         ],
       ),
     );

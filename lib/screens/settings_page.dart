@@ -10,83 +10,126 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   bool _largeText = false;
   bool _highContrast = false;
-  bool _notifications = true;
 
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
-    String _selectedTheme = themeProvider.themeMode == ThemeMode.light
-        ? 'Light'
-        : themeProvider.themeMode == ThemeMode.dark
-            ? 'Dark'
-            : 'System';
+    bool _isDarkMode = themeProvider.themeMode == ThemeMode.dark;
 
-    return Scaffold(
-      appBar: AppBar(title: Text('Settings')),
-      body: ListView(
-        children: [
-          ListTile(
-            title: Text('Theme Mode'),
-            trailing: DropdownButton<String>(
-              value: _selectedTheme,
-              items: [
-                DropdownMenuItem(value: 'Light', child: Text('Light')),
-                DropdownMenuItem(value: 'Dark', child: Text('Dark')),
-                DropdownMenuItem(value: 'System', child: Text('System')),
-              ],
-              onChanged: (value) {
-                final themeMode = value == 'Light'
-                    ? ThemeMode.light
-                    : value == 'Dark'
-                        ? ThemeMode.dark
-                        : ThemeMode.system;
-                themeProvider.setThemeMode(themeMode);
-              },
-            ),
+    // Adjust text theme for large text
+    final textTheme = Theme.of(context).textTheme.copyWith(
+          titleLarge: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontSize: _largeText ? 24 : 20,
+              ),
+          bodyLarge: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                fontSize: _largeText ? 18 : 16,
+              ),
+          bodyMedium: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontSize: _largeText ? 16 : 14,
+              ),
+        );
+
+    // Adjust theme for high contrast
+    final highContrastTheme = Theme.of(context).copyWith(
+      primaryColor: _highContrast ? Colors.blueAccent : Theme.of(context).primaryColor,
+      textTheme: textTheme.apply(
+        bodyColor: _highContrast ? Colors.black87 : Theme.of(context).textTheme.bodyLarge?.color,
+        displayColor: _highContrast ? Colors.black87 : Theme.of(context).textTheme.bodyLarge?.color,
+      ),
+      scaffoldBackgroundColor: _highContrast ? Colors.white : Theme.of(context).scaffoldBackgroundColor,
+    );
+
+    return Theme(
+      data: highContrastTheme,
+      child: Scaffold(
+        appBar: AppBar(title: Text('Settings')),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: ListView(
+            children: [
+              // Theme Section
+              Text(
+                'Theme',
+                style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 8),
+              ListTile(
+                leading: Icon(Icons.dark_mode_rounded, color: highContrastTheme.primaryColor),
+                title: Text('Dark Mode', style: textTheme.bodyLarge),
+                subtitle: Text('Toggle between light and dark theme', style: textTheme.bodyMedium),
+                trailing: Switch(
+                  value: _isDarkMode,
+                  onChanged: (value) {
+                    themeProvider.setThemeMode(value ? ThemeMode.dark : ThemeMode.light);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Dark Mode: ${value ? 'On' : 'Off'}')),
+                    );
+                  },
+                ),
+                onTap: () {
+                  themeProvider.setThemeMode(_isDarkMode ? ThemeMode.light : ThemeMode.dark);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Dark Mode: ${_isDarkMode ? 'Off' : 'On'}')),
+                  );
+                },
+              ),
+              Divider(color: Colors.grey.shade400, thickness: 1),
+              SizedBox(height: 16),
+              // Accessibility Section
+              Text(
+                'Accessibility',
+                style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 8),
+              ListTile(
+                leading: Icon(Icons.text_fields_rounded, color: highContrastTheme.primaryColor),
+                title: Text('Large Text', style: textTheme.bodyLarge),
+                subtitle: Text('Increase text size for better readability', style: textTheme.bodyMedium),
+                onTap: () {
+                  setState(() {
+                    _largeText = !_largeText;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Large Text: $_largeText')),
+                    );
+                  });
+                },
+              ),
+              Divider(color: Colors.grey.shade400, thickness: 1),
+              ListTile(
+                leading: Icon(Icons.contrast_rounded, color: highContrastTheme.primaryColor),
+                title: Text('High Contrast', style: textTheme.bodyLarge),
+                subtitle: Text('Enhance visibility with high contrast colors', style: textTheme.bodyMedium),
+                onTap: () {
+                  setState(() {
+                    _highContrast = !_highContrast;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('High Contrast: $_highContrast')),
+                    );
+                  });
+                },
+              ),
+              Divider(color: Colors.grey.shade400, thickness: 1),
+              SizedBox(height: 16),
+              // General Section
+              Text(
+                'General',
+                style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 8),
+              ListTile(
+                leading: Icon(Icons.notifications_active_rounded, color: highContrastTheme.primaryColor),
+                title: Text('Notifications', style: textTheme.bodyLarge),
+                subtitle: Text('Check for app notifications', style: textTheme.bodyMedium),
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('No new notifications')),
+                  );
+                },
+              ),
+              Divider(color: Colors.grey.shade400, thickness: 1),
+            ],
           ),
-          SwitchListTile(
-            title: Text('Large Text'),
-            subtitle: Text('Increase text size for better readability'),
-            secondary: Icon(Icons.text_fields_rounded),
-            value: _largeText,
-            onChanged: (value) {
-              setState(() {
-                _largeText = value;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Large Text: $value')),
-                );
-              });
-            },
-          ),
-          SwitchListTile(
-            title: Text('High Contrast'),
-            subtitle: Text('Enhance visibility with high contrast colors'),
-            secondary: Icon(Icons.contrast_rounded),
-            value: _highContrast,
-            onChanged: (value) {
-              setState(() {
-                _highContrast = value;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('High Contrast: $value')),
-                );
-              });
-            },
-          ),
-          SwitchListTile(
-            title: Text('Notifications'),
-            subtitle: Text('Enable or disable app notifications'),
-            secondary: Icon(Icons.notifications_active_rounded),
-            value: _notifications,
-            onChanged: (value) {
-              setState(() {
-                _notifications = value;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Notifications: $value')),
-                );
-              });
-            },
-          ),
-        ],
+        ),
       ),
     );
   }
