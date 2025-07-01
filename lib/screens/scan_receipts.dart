@@ -41,7 +41,6 @@ class _ScanReceiptPageState extends State<ScanReceiptPage> {
       try {
         await _controller!.initialize();
         await _controller!.setFlashMode(FlashMode.off);
-        // Set focus mode to auto initially
         await _controller!.setFocusMode(FocusMode.auto);
         await _controller!.setExposureMode(ExposureMode.auto);
         if (mounted) setState(() {});
@@ -83,36 +82,24 @@ class _ScanReceiptPageState extends State<ScanReceiptPage> {
     }
 
     try {
-      // Get screen dimensions
       final RenderBox renderBox = context.findRenderObject() as RenderBox;
       final size = renderBox.size;
-      
-      // Convert screen coordinates to normalized coordinates [0.0, 1.0]
       final double x = (point.dx / size.width).clamp(0.0, 1.0);
       final double y = (point.dy / size.height).clamp(0.0, 1.0);
 
       print('Setting focus at screen point: (${point.dx}, ${point.dy})');
       print('Normalized coordinates: ($x, $y)');
 
-      // Set focus mode to locked to ensure we can control focus manually
       await _controller!.setFocusMode(FocusMode.locked);
-      
-      // Small delay to ensure mode change takes effect
       await Future.delayed(Duration(milliseconds: 50));
-      
-      // Set the focus point
       await _controller!.setFocusPoint(Offset(x, y));
-      
-      // Also set exposure point for better results
       await _controller!.setExposurePoint(Offset(x, y));
 
-      // Show focus indicator
       setState(() {
         _focusPoint = point;
         _showFocusIndicator = true;
       });
 
-      // Hide focus indicator after 2 seconds
       Future.delayed(Duration(seconds: 2), () {
         if (mounted) {
           setState(() {
@@ -122,10 +109,8 @@ class _ScanReceiptPageState extends State<ScanReceiptPage> {
       });
 
       print('Focus successfully set at normalized coordinates: ($x, $y)');
-      
     } catch (e) {
       print('Focus error: $e');
-      // If manual focus fails, fallback to auto focus
       try {
         await _controller!.setFocusMode(FocusMode.auto);
         print('Fallback to auto focus mode');
@@ -139,32 +124,29 @@ class _ScanReceiptPageState extends State<ScanReceiptPage> {
     if (_capturedImageFile == null) return;
 
     try {
-      // Step 1: Perform on-device OCR
       final inputImage = InputImage.fromFilePath(_capturedImageFile!.path);
       final RecognizedText recognizedText = await _textRecognizer.processImage(inputImage);
       final String rawText = recognizedText.text;
-      print('OCR Text: $rawText'); // Log OCR output for debugging
+      print('OCR Text: $rawText');
 
-      // Step 2: Send the extracted text to the backend server
       final response = await http.post(
         Uri.parse(serverUrl),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'text': rawText}),
       ).timeout(
-        const Duration(seconds: 10), // Add timeout to catch network issues
+        const Duration(seconds: 10),
         onTimeout: () {
           throw Exception('Request timed out. Check server at $serverUrl');
         },
       );
 
-      print('Server Response: Status ${response.statusCode}, Body: ${response.body}'); // Log server response
+      print('Server Response: Status ${response.statusCode}, Body: ${response.body}');
 
       if (response.statusCode == 200) {
         final String responseBody = response.body;
 
         if (!mounted) return;
 
-        // Step 3: Navigate to ResultScreen and await the returned ReceiptEntry
         final ReceiptEntry? result = await Navigator.push<ReceiptEntry>(
           context,
           MaterialPageRoute(
@@ -175,20 +157,17 @@ class _ScanReceiptPageState extends State<ScanReceiptPage> {
           ),
         );
 
-        // Step 4: If user confirmed and a result was returned, add it and go back
         if (result != null && widget.onEntryAdded != null) {
           widget.onEntryAdded!(result);
-          if (mounted) Navigator.pop(context); // Go back to main screen
+          if (mounted) Navigator.pop(context);
         }
       } else {
         print('Server error: ${response.statusCode}. Using local OCR parsing.');
-        // Fallback: Parse total locally
         String total = '0.00';
         String? date;
         String? merchant;
         for (var block in recognizedText.blocks) {
           final text = block.text.toLowerCase();
-          // Extract total
           if (text.contains('total') || text.contains('amount')) {
             final lines = block.text.split('\n');
             for (var line in lines) {
@@ -199,11 +178,9 @@ class _ScanReceiptPageState extends State<ScanReceiptPage> {
               }
             }
           }
-          // Extract merchant (simple heuristic: first line often contains the store name)
           if (merchant == null && block.text.isNotEmpty) {
             merchant = block.text.split('\n').first;
           }
-          // Extract date (look for date patterns like DD/MM/YYYY or YYYY-MM-DD)
           final dateMatch = RegExp(r'\d{1,2}/\d{1,2}/\d{2,4}|\d{4}-\d{2}-\d{2}').firstMatch(block.text);
           if (dateMatch != null) {
             date = dateMatch.group(0);
@@ -213,7 +190,7 @@ class _ScanReceiptPageState extends State<ScanReceiptPage> {
         final result = ReceiptEntry(
           imageFile: _capturedImageFile!,
           merchant: merchant ?? 'Unknown Store',
-          currency: '£', // Default currency, adjust as needed
+          currency: '£',
           total: total,
           category: 'General',
           date: date != null ? DateTime.tryParse(date) ?? DateTime.now() : DateTime.now(),
@@ -221,7 +198,6 @@ class _ScanReceiptPageState extends State<ScanReceiptPage> {
 
         if (!mounted) return;
 
-        // Navigate to ResultScreen with fallback data
         final confirmedResult = await Navigator.push<ReceiptEntry>(
           context,
           MaterialPageRoute(
@@ -272,12 +248,20 @@ class _ScanReceiptPageState extends State<ScanReceiptPage> {
   Widget build(BuildContext context) {
     if (_controller == null || !_controller!.value.isInitialized) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Scan Receipt')),
+        appBar: AppBar(
+          title: const Text('Scan Receipt', style: TextStyle(color: Colors.white)),
+          backgroundColor: const Color(0xFF1C1C1E),
+          iconTheme: const IconThemeData(color: Colors.white),
+        ),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
     return Scaffold(
-      appBar: AppBar(title: const Text('Scan Receipt')),
+      appBar: AppBar(
+        title: const Text('Scan Receipt', style: TextStyle(color: Colors.white)),
+        backgroundColor: const Color(0xFF1C1C1E),
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
       body: Stack(
         children: [
           _capturedImageFile != null
@@ -302,7 +286,7 @@ class _ScanReceiptPageState extends State<ScanReceiptPage> {
                             border: Border.all(color: Colors.yellow, width: 3),
                           ),
                           child: Container(
-                            margin: EdgeInsets.all(15),
+                            margin: const EdgeInsets.all(15),
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(color: Colors.yellow, width: 1),
@@ -322,15 +306,23 @@ class _ScanReceiptPageState extends State<ScanReceiptPage> {
   }
 
   Widget _buildCameraControls() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final backgroundColor = isDark ? const Color(0xFF1C1D1F) : Colors.white;
+    final iconColor = isDark ? Colors.white : Colors.black;
+
     return Container(
       height: 120,
       padding: const EdgeInsets.symmetric(horizontal: 30),
-      decoration: const BoxDecoration(color: Color(0xFF1C1D1F)),
+      decoration: BoxDecoration(color: backgroundColor),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           IconButton(
-            icon: Icon(_isFlashOn ? Icons.flash_on : Icons.flash_off, color: Colors.white, size: 30),
+            icon: Icon(
+              _isFlashOn ? Icons.flash_on : Icons.flash_off,
+              color: iconColor,
+              size: 30,
+            ),
             onPressed: _toggleFlash,
           ),
           GestureDetector(
@@ -339,14 +331,18 @@ class _ScanReceiptPageState extends State<ScanReceiptPage> {
               width: 70,
               height: 70,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: iconColor,
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.black, width: 4),
+                border: Border.all(color: isDark ? Colors.white : Colors.black, width: 4),
               ),
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.photo_library, color: Colors.white, size: 30),
+            icon: Icon(
+              Icons.photo_library,
+              color: iconColor,
+              size: 30,
+            ),
             onPressed: _pickImageFromGallery,
           ),
         ],
@@ -355,30 +351,43 @@ class _ScanReceiptPageState extends State<ScanReceiptPage> {
   }
 
   Widget _buildPreviewControls() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final backgroundColor = isDark ? const Color(0xFF1C1D1F) : Colors.white;
+    final iconColor = isDark ? Colors.white : Colors.black;
+
     return Container(
       height: 120,
       padding: const EdgeInsets.symmetric(horizontal: 50),
-      decoration: const BoxDecoration(color: Color(0xFF1C1D1F)),
+      decoration: BoxDecoration(color: backgroundColor),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          GestureDetector(onTap: _discardImage, child: _circleButton(icon: Icons.close)),
-          GestureDetector(onTap: _sendImageAndNavigate, child: _circleButton(icon: Icons.check)),
+          GestureDetector(
+            onTap: _discardImage,
+            child: _circleButton(icon: Icons.close, isDark: isDark, iconColor: Colors.red),
+          ),
+          GestureDetector(
+            onTap: _sendImageAndNavigate,
+            child: _circleButton(icon: Icons.check, isDark: isDark, iconColor: Colors.green),
+          ),
         ],
       ),
     );
   }
 
-  Widget _circleButton({required IconData icon}) {
+  Widget _circleButton({required IconData icon, required bool isDark, required Color iconColor}) {
+    final buttonColor = isDark ? Colors.white : Colors.black;
+    final borderColor = isDark ? Colors.white : Colors.black;
+
     return Container(
       width: 60,
       height: 60,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: buttonColor,
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.black, width: 2),
+        border: Border.all(color: borderColor, width: 2),
       ),
-      child: Icon(icon, color: Colors.black, size: 35),
+      child: Icon(icon, color: iconColor, size: 35),
     );
   }
 }

@@ -73,6 +73,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.0"
+  chips_choice:
+    dependency: "direct main"
+    description:
+      name: chips_choice
+      sha256: "5438b0e8a7fa459e5a21b8404a00abdc315e8885e370c24123786388cba3bc67"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.1.1"
   clock:
     dependency: transitive
     description:

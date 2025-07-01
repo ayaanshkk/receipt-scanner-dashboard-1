@@ -16,7 +16,7 @@ class AppDrawer extends StatelessWidget {
         children: [
           UserAccountsDrawerHeader(
             accountName: Text(userId),
-            accountEmail: Text('$userId@example.com'),
+            accountEmail: null,
             currentAccountPicture: CircleAvatar(
               backgroundColor: Theme.of(context).primaryColor,
               child: Icon(Icons.person, size: 40, color: Colors.white),

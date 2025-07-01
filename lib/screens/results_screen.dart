@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'results_list.dart'; // Adjust import if necessary
+import 'package:receipt_scanner/screens/results_list.dart'; // Adjust import if necessary
 
 class ResultScreen extends StatefulWidget {
   final String data;
@@ -69,22 +69,18 @@ class _ResultScreenState extends State<ResultScreen> {
   void _populateFieldsFromData() {
     try {
       final parsed = jsonDecode(widget.data);
-      // print('Parsed JSON: $parsed'); // Debug print
 
       _merchantController = TextEditingController(
         text: _toTitleCase(parsed['establishment'] ?? ''),
       );
 
-      // Improved date parsing
       String dateRaw = parsed['date']?.toString() ?? '';
-      // print('Date raw: $dateRaw'); // Debug print
       DateTime? parsedDate = _parseDate(dateRaw);
-      _selectedDate = parsedDate;
+      _selectedDate = parsedDate ?? DateTime.now(); // Default to today if parsing fails
       _dateController = TextEditingController(
-        text: parsedDate != null ? DateFormat('MMMM d, yyyy').format(parsedDate) : dateRaw,
+        text: DateFormat('MMMM d, yyyy').format(_selectedDate!),
       );
 
-      // Currency
       final currency = parsed['currency']?.toString() ?? '';
       _currencyController = TextEditingController(
         text: _currencies.contains(currency) ? currency : '£',
@@ -93,19 +89,13 @@ class _ResultScreenState extends State<ResultScreen> {
       _totalController = TextEditingController(text: parsed['total']?.toString() ?? '');
       _vatController = TextEditingController(text: parsed['VAT']?.toString() ?? '');
 
-      // Improved payment method matching
       final methodRaw = parsed['method_of_payment']?.toString() ?? '';
-      // print('Method raw: $methodRaw'); // Debug print
       _selectedPaymentMethod = _findBestPaymentMethodMatch(methodRaw);
-      // print('Selected payment method: $_selectedPaymentMethod'); // Debug print
 
-      // Improved category matching
       final categoryRaw = parsed['category']?.toString() ?? '';
-      // print('Category raw: $categoryRaw'); // Debug print
       _selectedCategory = _findBestCategoryMatch(categoryRaw);
-      // print('Selected category: $_selectedCategory'); // Debug print
     } catch (e) {
-      // print('Error parsing data: $e'); // Debug print
+      print('Error parsing data: $e');
       _merchantController = TextEditingController();
       _dateController = TextEditingController();
       _currencyController = TextEditingController(text: '£');
@@ -113,16 +103,17 @@ class _ResultScreenState extends State<ResultScreen> {
       _vatController = TextEditingController();
       _selectedCategory = null;
       _selectedPaymentMethod = null;
+      _selectedDate = DateTime.now();
+      _dateController.text = DateFormat('MMMM d, yyyy').format(_selectedDate!);
     }
   }
 
   DateTime? _parseDate(String dateStr) {
     if (dateStr.isEmpty) return null;
 
-    // Handle two-digit years explicitly (e.g., 25/06/25 or 06-25-25)
     final twoDigitYearPatterns = [
       RegExp(r'^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2})$'), // dd/mm/yy or mm-dd-yy
-      RegExp(r'^(\d{2})[\/\-](\d{1,2})[\/\-](\d{1,2})$'), // yy/mm/dd (rare)
+      RegExp(r'^(\d{2})[\/\-](\d{1,2})[\/\-](\d{1,2})$'), // yy/mm/dd
     ];
 
     for (final pattern in twoDigitYearPatterns) {
@@ -131,19 +122,13 @@ class _ResultScreenState extends State<ResultScreen> {
         int day = int.parse(match.group(1)!);
         int month = int.parse(match.group(2)!);
         int year = int.parse(match.group(3)!);
-
-        // Assume year 20xx for 2 digit years less than 50
         year += (year < 50 ? 2000 : 1900);
-
         try {
           return DateTime(year, month, day);
-        } catch (_) {
-          // If invalid, continue to next pattern
-        }
+        } catch (_) {}
       }
     }
 
-    // Try parsing common formats
     try {
       return DateFormat('dd/MM/yyyy').parseStrict(dateStr);
     } catch (_) {}
@@ -160,7 +145,6 @@ class _ResultScreenState extends State<ResultScreen> {
       return DateFormat('MMMM d, yyyy').parseStrict(dateStr);
     } catch (_) {}
 
-    // Fallback to DateTime.parse (ISO)
     try {
       return DateTime.parse(dateStr);
     } catch (_) {}
@@ -170,7 +154,6 @@ class _ResultScreenState extends State<ResultScreen> {
 
   String? _findBestPaymentMethodMatch(String method) {
     final lowerMethod = method.toLowerCase();
-
     if (lowerMethod.contains('card') || lowerMethod.contains('credit') || lowerMethod.contains('debit')) {
       return 'Payment card';
     }
@@ -186,20 +169,16 @@ class _ResultScreenState extends State<ResultScreen> {
   String? _findBestCategoryMatch(String category) {
     if (category.isEmpty) return null;
     final lowerCategory = category.toLowerCase();
-
     for (var cat in _categories) {
       if (cat.toLowerCase() == lowerCategory) {
         return cat;
       }
     }
-
-    // If no exact match, check for partial matches (e.g., if category contains keywords)
     for (var cat in _categories) {
       if (lowerCategory.contains(cat.toLowerCase().split(' ')[0])) {
         return cat;
       }
     }
-
     return null;
   }
 
@@ -209,6 +188,20 @@ class _ResultScreenState extends State<ResultScreen> {
       initialDate: _selectedDate ?? DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: const Color(0xFF29A165), // Use green for date picker
+              onPrimary: Colors.white,
+              surface: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF1C1C1E) : Colors.white,
+              onSurface: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black,
+            ),
+            dialogBackgroundColor: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF1C1C1E) : Colors.white,
+          ),
+          child: child!,
+        );
+      },
     );
     if (picked != null) {
       setState(() {
@@ -218,36 +211,56 @@ class _ResultScreenState extends State<ResultScreen> {
     }
   }
 
+  void _openFullScreenImage() {
+    if (widget.imageFile.existsSync()) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => FullScreenImage(imageFile: widget.imageFile),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Image file not found')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Receipt Details'),
+        title: Text(
+          'Receipt Details',
+          style: TextStyle(color: isDark ? Colors.white : Colors.black),
+        ),
+        backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+        iconTheme: IconThemeData(color: isDark ? Colors.white : Colors.black),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Image preview
-            if (widget.imageFile.path.isNotEmpty)
-              ClipRRect(
+            // Image preview with tap to open
+            GestureDetector(
+              onTap: _openFullScreenImage,
+              child: ClipRRect(
                 borderRadius: BorderRadius.circular(20),
-                child: Image.file(widget.imageFile, width: double.infinity, height: 200, fit: BoxFit.cover),
-              )
-            else
-              Container(
-                width: double.infinity,
-                height: 200,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Icon(Icons.image_not_supported, size: 100, color: Colors.grey),
+                child: widget.imageFile.existsSync()
+                    ? Image.file(widget.imageFile, width: double.infinity, height: 200, fit: BoxFit.cover)
+                    : Container(
+                        width: double.infinity,
+                        height: 200,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Icon(Icons.image_not_supported, size: 100, color: Colors.grey),
+                      ),
               ),
-
+            ),
             const SizedBox(height: 20),
-
-            // Merchant field
             TextField(
               controller: _merchantController,
               decoration: const InputDecoration(
@@ -255,24 +268,22 @@ class _ResultScreenState extends State<ResultScreen> {
                 border: OutlineInputBorder(),
               ),
             ),
-
             const SizedBox(height: 16),
-
-            // Date field with date picker
             TextField(
               controller: _dateController,
               readOnly: true,
               onTap: _selectDate,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Date',
-                border: OutlineInputBorder(),
-                suffixIcon: Icon(Icons.calendar_today),
+                border: const OutlineInputBorder(),
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.calendar_today),
+                  onPressed: _selectDate,
+                  color: isDark ? Colors.white : Colors.black,
+                ),
               ),
             ),
-
             const SizedBox(height: 16),
-
-            // Currency and total fields in a row
             Row(
               children: [
                 Expanded(
@@ -299,10 +310,7 @@ class _ResultScreenState extends State<ResultScreen> {
                 ),
               ],
             ),
-
             const SizedBox(height: 16),
-
-            // VAT field
             TextField(
               controller: _vatController,
               keyboardType: TextInputType.number,
@@ -311,10 +319,7 @@ class _ResultScreenState extends State<ResultScreen> {
                 border: OutlineInputBorder(),
               ),
             ),
-
             const SizedBox(height: 16),
-
-            // Category dropdown
             DropdownButtonFormField<String>(
               value: _selectedCategory,
               items: _categories
@@ -333,10 +338,7 @@ class _ResultScreenState extends State<ResultScreen> {
                 });
               },
             ),
-
             const SizedBox(height: 16),
-
-            // Payment method dropdown
             DropdownButtonFormField<String>(
               value: _selectedPaymentMethod,
               items: _paymentMethods
@@ -355,13 +357,10 @@ class _ResultScreenState extends State<ResultScreen> {
                 });
               },
             ),
-
-            const SizedBox(height: 32),
-
-            // Add Entry button
+            const SizedBox(height: 16),
             GestureDetector(
               onTap: () {
-                if (_selectedDate == null) {
+                if (_selectedDate == null || _dateController.text.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Please select a valid date')),
                   );
@@ -384,6 +383,13 @@ class _ResultScreenState extends State<ResultScreen> {
                 decoration: BoxDecoration(
                   color: const Color(0xFF29A165),
                   borderRadius: BorderRadius.circular(20),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 4,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: const Text(
                   'Add Entry',
@@ -393,6 +399,28 @@ class _ResultScreenState extends State<ResultScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class FullScreenImage extends StatelessWidget {
+  final File imageFile;
+
+  const FullScreenImage({required this.imageFile, super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+        iconTheme: IconThemeData(color: isDark ? Colors.white : Colors.black),
+      ),
+      body: Center(
+        child: imageFile.existsSync()
+            ? Image.file(imageFile, fit: BoxFit.contain)
+            : const Text('Image not found', style: TextStyle(fontSize: 18)),
       ),
     );
   }
