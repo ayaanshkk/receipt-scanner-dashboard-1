@@ -4,12 +4,10 @@ import 'package:camera/camera.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:http/http.dart' as http;
 import 'package:receipt_scanner/screens/results_list.dart';
+import 'package:receipt_scanner/screens/results_screen.dart';
 import 'dart:convert';
 import 'package:image_picker/image_picker.dart';
-import 'results_screen.dart';
-
-// Configurable server URL
-const String serverUrl = 'http://192.168.0.66:3000/ocr'; // For Android emulator
+import 'package:receipt_scanner/secure_storage.dart';
 
 class ScanReceiptPage extends StatefulWidget {
   final List cameras;
@@ -45,7 +43,9 @@ class _ScanReceiptPageState extends State<ScanReceiptPage> {
         await _controller!.setExposureMode(ExposureMode.auto);
         if (mounted) setState(() {});
       } catch (e) {
-        print('Camera initialization error: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Camera initialization error: $e')),
+        );
       }
     }
   }
@@ -72,7 +72,9 @@ class _ScanReceiptPageState extends State<ScanReceiptPage> {
       _capturedImageFile = File(image.path);
       if (mounted) setState(() {});
     } catch (e) {
-      print('Error capturing image: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error capturing image: $e')),
+      );
     }
   }
 
@@ -80,18 +82,14 @@ class _ScanReceiptPageState extends State<ScanReceiptPage> {
     if (_controller == null || !_controller!.value.isInitialized || _capturedImageFile != null) {
       return;
     }
-
     try {
       final RenderBox renderBox = context.findRenderObject() as RenderBox;
       final size = renderBox.size;
       final double x = (point.dx / size.width).clamp(0.0, 1.0);
       final double y = (point.dy / size.height).clamp(0.0, 1.0);
 
-      print('Setting focus at screen point: (${point.dx}, ${point.dy})');
-      print('Normalized coordinates: ($x, $y)');
-
       await _controller!.setFocusMode(FocusMode.locked);
-      await Future.delayed(Duration(milliseconds: 50));
+      await Future.delayed(const Duration(milliseconds: 50));
       await _controller!.setFocusPoint(Offset(x, y));
       await _controller!.setExposurePoint(Offset(x, y));
 
@@ -100,129 +98,66 @@ class _ScanReceiptPageState extends State<ScanReceiptPage> {
         _showFocusIndicator = true;
       });
 
-      Future.delayed(Duration(seconds: 2), () {
-        if (mounted) {
-          setState(() {
-            _showFocusIndicator = false;
-          });
-        }
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) setState(() => _showFocusIndicator = false);
       });
-
-      print('Focus successfully set at normalized coordinates: ($x, $y)');
     } catch (e) {
-      print('Focus error: $e');
       try {
         await _controller!.setFocusMode(FocusMode.auto);
-        print('Fallback to auto focus mode');
-      } catch (fallbackError) {
-        print('Fallback focus error: $fallbackError');
-      }
+      } catch (_) {}
     }
   }
 
   Future<void> _sendImageAndNavigate() async {
     if (_capturedImageFile == null) return;
 
+    final token = await SecureStorage.getToken();
+    if (token == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Not logged in')),
+      );
+      return;
+    }
+
     try {
       final inputImage = InputImage.fromFilePath(_capturedImageFile!.path);
       final RecognizedText recognizedText = await _textRecognizer.processImage(inputImage);
       final String rawText = recognizedText.text;
-      print('OCR Text: $rawText');
 
       final response = await http.post(
-        Uri.parse(serverUrl),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'text': rawText}),
-      ).timeout(
-        const Duration(seconds: 10),
-        onTimeout: () {
-          throw Exception('Request timed out. Check server at $serverUrl');
+        Uri.parse('https://receipt-scanner-backend-0d53818d62b3.herokuapp.com/api/receipts/process-receipt'), // Replace with actual URL
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
         },
+        body: jsonEncode({'text': rawText}),
       );
 
-      print('Server Response: Status ${response.statusCode}, Body: ${response.body}');
-
       if (response.statusCode == 200) {
-        final String responseBody = response.body;
-
-        if (!mounted) return;
-
-        final ReceiptEntry? result = await Navigator.push<ReceiptEntry>(
+        final result = await Navigator.push<ReceiptEntry>(
           context,
           MaterialPageRoute(
             builder: (_) => ResultScreen(
-              data: responseBody,
+              data: response.body,
               imageFile: _capturedImageFile!,
             ),
           ),
         );
 
-        if (result != null && widget.onEntryAdded != null) {
+        if (result != null && widget.onEntryAdded != null && mounted) {
           widget.onEntryAdded!(result);
-          if (mounted) Navigator.pop(context);
+          Navigator.pop(context);
         }
       } else {
-        print('Server error: ${response.statusCode}. Using local OCR parsing.');
-        String total = '0.00';
-        String? date;
-        String? merchant;
-        for (var block in recognizedText.blocks) {
-          final text = block.text.toLowerCase();
-          if (text.contains('total') || text.contains('amount')) {
-            final lines = block.text.split('\n');
-            for (var line in lines) {
-              final match = RegExp(r'(?:£|\$|€)?\s*(\d+\.\d{2})').firstMatch(line);
-              if (match != null) {
-                total = match.group(1) ?? '0.00';
-                break;
-              }
-            }
-          }
-          if (merchant == null && block.text.isNotEmpty) {
-            merchant = block.text.split('\n').first;
-          }
-          final dateMatch = RegExp(r'\d{1,2}/\d{1,2}/\d{2,4}|\d{4}-\d{2}-\d{2}').firstMatch(block.text);
-          if (dateMatch != null) {
-            date = dateMatch.group(0);
-          }
-        }
-
-        final result = ReceiptEntry(
-          imageFile: _capturedImageFile!,
-          merchant: merchant ?? 'Unknown Store',
-          currency: '£',
-          total: total,
-          category: 'General',
-          date: date != null ? DateTime.tryParse(date) ?? DateTime.now() : DateTime.now(),
+        final error = jsonDecode(response.body)['error'] ?? 'Processing failed';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $error')),
         );
-
-        if (!mounted) return;
-
-        final confirmedResult = await Navigator.push<ReceiptEntry>(
-          context,
-          MaterialPageRoute(
-            builder: (_) => ResultScreen(
-              data: jsonEncode({
-                'establishment': merchant ?? 'Unknown Store',
-                'total': total,
-                'currency': '£',
-                'category': 'General',
-                'date': date ?? DateTime.now().toIso8601String(),
-                'VAT': null,
-                'method_of_payment': null,
-              }),
-              imageFile: _capturedImageFile!,
-            ),
-          ),
-        );
-
-        if (confirmedResult != null && widget.onEntryAdded != null) {
-          widget.onEntryAdded!(confirmedResult);
-          if (mounted) Navigator.pop(context);
-        }
       }
     } catch (e) {
-      print('Error processing receipt: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
     }
   }
 
@@ -240,7 +175,9 @@ class _ScanReceiptPageState extends State<ScanReceiptPage> {
         if (mounted) setState(() {});
       }
     } catch (e) {
-      print('Error picking image: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error picking image: $e')),
+      );
     }
   }
 
@@ -269,9 +206,7 @@ class _ScanReceiptPageState extends State<ScanReceiptPage> {
               : Stack(
                   children: [
                     GestureDetector(
-                      onTapDown: (details) {
-                        _setFocusPoint(details.localPosition);
-                      },
+                      onTapDown: (details) => _setFocusPoint(details.localPosition),
                       child: CameraPreview(_controller!),
                     ),
                     if (_showFocusIndicator && _focusPoint != null)
@@ -353,7 +288,6 @@ class _ScanReceiptPageState extends State<ScanReceiptPage> {
   Widget _buildPreviewControls() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final backgroundColor = isDark ? const Color(0xFF1C1D1F) : Colors.white;
-    final iconColor = isDark ? Colors.white : Colors.black;
 
     return Container(
       height: 120,

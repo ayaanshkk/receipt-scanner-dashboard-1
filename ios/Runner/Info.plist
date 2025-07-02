@@ -30,6 +30,8 @@
 	<string>This app needs camera access to scan receipts.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>This app needs microphone access to record audio with video (not currently used).</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Photo library access is required to select receipts</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
