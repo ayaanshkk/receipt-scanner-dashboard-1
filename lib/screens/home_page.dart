@@ -10,9 +10,10 @@ import 'package:receipt_scanner/screens/scan_receipts.dart';
 import 'package:receipt_scanner/screens/results_list.dart';
 import 'package:receipt_scanner/screens/results_screen.dart';
 import 'dart:convert';
+import 'package:url_launcher/url_launcher.dart';
 
 // Configurable server URL
-const String serverUrl = 'http://192.168.0.66:3000/ocr'; // For Android emulator
+const String serverUrl = 'https://receipt-scanner-backend-0d53818d62b3.herokuapp.com/api/receipts/process-receipt'; // For Android emulator
 // const String serverUrl = 'http://192.168.0.66:3001/ocr'; // For physical devices
 
 class HomePage extends StatelessWidget {
@@ -255,20 +256,41 @@ class HomePage extends StatelessWidget {
                   iconColor: iconColor,
                   onTap: () => _uploadReceipts(context),
                 ),
+
                 _HomeActionCard(
                   title: 'View Analytics',
                   icon: CupertinoIcons.chart_bar_alt_fill,
                   iconColor: iconColor,
-                  onTap: () {
-                    // TODO: Handle Analytics
+                  onTap: () async {
+                    const analyticsUrl = 'https://demo-analytics--receipt-scanner.netlify.app';
+                    final Uri url = Uri.parse(analyticsUrl);
+                    if (await canLaunchUrl(url)) {
+                      await launchUrl(url, mode: LaunchMode.externalApplication);
+                    } else {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Could not open analytics link')),
+                        );
+                      }
+                    }
                   },
                 ),
                 _HomeActionCard(
                   title: 'Export',
                   icon: CupertinoIcons.arrow_up_doc,
                   iconColor: iconColor,
-                  onTap: () {
-                    // TODO: Handle Export
+                  onTap: () async {
+                    const exportUrl = 'https://demo-export--receipt-scanner.netlify.app';
+                    final Uri url = Uri.parse(exportUrl);
+                    if (await canLaunchUrl(url)) {
+                      await launchUrl(url, mode: LaunchMode.externalApplication);
+                    } else {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Could not open export link')),
+                        );
+                      }
+                    }
                   },
                 ),
               ],
@@ -392,7 +414,7 @@ class ReceiptCard extends StatelessWidget {
               Text(
                 '${entry.currency}${entry.total}',
                 style: TextStyle(
-                  fontSize: 26,
+                  fontSize: 0,
                   fontWeight: FontWeight.w700,
                   color: Theme.of(context).textTheme.titleLarge?.color,
                   letterSpacing: -0.5,

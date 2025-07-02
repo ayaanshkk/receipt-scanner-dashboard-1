@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-
 import 'package:receipt_scanner/screens/home_page.dart' as home;
 import 'package:receipt_scanner/screens/results_list.dart';
 import 'package:receipt_scanner/screens/account_page.dart';

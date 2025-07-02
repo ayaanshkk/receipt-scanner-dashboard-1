@@ -19,6 +19,25 @@ class _LoginPageState extends State<LoginPage> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
+  bool _rememberMe = false;
+  bool _showPassword = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedCredentials();
+  }
+
+  Future<void> _loadSavedCredentials() async {
+    final credentials = await SecureStorage.getCredentials();
+    if (credentials != null) {
+      setState(() {
+        _usernameController.text = credentials['username'] ?? '';
+        _passwordController.text = credentials['password'] ?? '';
+        _rememberMe = true;
+      });
+    }
+  }
 
   Future<void> _handleLogin() async {
     final username = _usernameController.text.trim();
@@ -34,7 +53,7 @@ class _LoginPageState extends State<LoginPage> {
     setState(() => _isLoading = true);
     try {
       final response = await http.post(
-        Uri.parse('https://receipt-scanner-backend-0d53818d62b3.herokuapp.com/api/auth/login'), // Replace with actual URL
+        Uri.parse('https://receipt-scanner-backend-0d53818d62b3.herokuapp.com/api/auth/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'username': username, 'password': password}),
       );
@@ -42,6 +61,11 @@ class _LoginPageState extends State<LoginPage> {
       if (response.statusCode == 200) {
         final token = jsonDecode(response.body)['token'];
         await SecureStorage.saveToken(token);
+        if (_rememberMe) {
+          await SecureStorage.saveCredentials(username, password);
+        } else {
+          await SecureStorage.clearCredentials();
+        }
         if (mounted) {
           Navigator.pushReplacement(
             context,
@@ -115,16 +139,41 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 6),
               TextField(
                 controller: _passwordController,
-                obscureText: true,
+                obscureText: !_showPassword,
                 style: Theme.of(context).textTheme.bodyLarge,
                 decoration: InputDecoration(
                   hintText: 'Enter your password',
                   hintStyle: Theme.of(context).textTheme.bodyMedium,
                   border: InputBorder.none,
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _showPassword ? Icons.visibility : Icons.visibility_off,
+                      color: Theme.of(context).iconTheme.color?.withOpacity(0.6),
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _showPassword = !_showPassword;
+                      });
+                    },
+                  ),
                 ),
               ),
               Container(height: 1, color: Theme.of(context).dividerColor),
-              const SizedBox(height: 36),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Checkbox(
+                    value: _rememberMe,
+                    onChanged: (value) {
+                      setState(() {
+                        _rememberMe = value ?? false;
+                      });
+                    },
+                  ),
+                  const Text('Remember Me'),
+                ],
+              ),
+              const SizedBox(height: 20),
               Center(
                 child: GestureDetector(
                   onTap: _isLoading ? null : _handleLogin,
