@@ -1,0 +1,348 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.example.receipt_scanner"
+4    android:versionCode="1"
+5    android:versionName="1.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="24"
+9        android:targetSdkVersion="34" />
+10
+11    <uses-permission android:name="android.permission.CAMERA" />
+11-->/Users/razataiab/Desktop/receipt-scanner-dashboard/android/app/src/main/AndroidManifest.xml:2:5-65
+11-->/Users/razataiab/Desktop/receipt-scanner-dashboard/android/app/src/main/AndroidManifest.xml:2:22-62
+12    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+12-->/Users/razataiab/Desktop/receipt-scanner-dashboard/android/app/src/main/AndroidManifest.xml:3:1-76
+12-->/Users/razataiab/Desktop/receipt-scanner-dashboard/android/app/src/main/AndroidManifest.xml:3:18-73
+13    <uses-permission
+13-->/Users/razataiab/Desktop/receipt-scanner-dashboard/android/app/src/main/AndroidManifest.xml:4:1-104
+14        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+14-->/Users/razataiab/Desktop/receipt-scanner-dashboard/android/app/src/main/AndroidManifest.xml:4:18-74
+15        android:maxSdkVersion="32" />
+15-->/Users/razataiab/Desktop/receipt-scanner-dashboard/android/app/src/main/AndroidManifest.xml:4:75-101
+16
+17    <uses-feature android:name="android.hardware.camera" />
+17-->/Users/razataiab/Desktop/receipt-scanner-dashboard/android/app/src/main/AndroidManifest.xml:6:5-60
+17-->/Users/razataiab/Desktop/receipt-scanner-dashboard/android/app/src/main/AndroidManifest.xml:6:19-57
+18    <!--
+19         Required to query activities that can process text, see:
+20         https://developer.android.com/training/package-visibility and
+21         https://developer.android.com/reference/android/content/Intent#ACTION_PROCESS_TEXT.
+22
+23         In particular, this is used by the Flutter engine in io.flutter.plugin.text.ProcessTextPlugin.
+24    -->
+25    <queries>
+25-->/Users/razataiab/Desktop/receipt-scanner-dashboard/android/app/src/main/AndroidManifest.xml:44:5-49:15
+26        <intent>
+26-->/Users/razataiab/Desktop/receipt-scanner-dashboard/android/app/src/main/AndroidManifest.xml:45:9-48:18
+27            <action android:name="android.intent.action.PROCESS_TEXT" />
+27-->/Users/razataiab/Desktop/receipt-scanner-dashboard/android/app/src/main/AndroidManifest.xml:46:13-72
+27-->/Users/razataiab/Desktop/receipt-scanner-dashboard/android/app/src/main/AndroidManifest.xml:46:21-70
+28
+29            <data android:mimeType="text/plain" />
+29-->/Users/razataiab/Desktop/receipt-scanner-dashboard/android/app/src/main/AndroidManifest.xml:47:13-50
+29-->/Users/razataiab/Desktop/receipt-scanner-dashboard/android/app/src/main/AndroidManifest.xml:47:19-48
+30        </intent>
+31    </queries>
+32
+33    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+33-->[:camera_android] /Users/razataiab/.pub-cache/hosted/pub.dev/camera_android-0.10.10+3/android/build/intermediates/merged_manifest/release/processReleaseManifest/AndroidManifest.xml:8:5-71
+33-->[:camera_android] /Users/razataiab/.pub-cache/hosted/pub.dev/camera_android-0.10.10+3/android/build/intermediates/merged_manifest/release/processReleaseManifest/AndroidManifest.xml:8:22-68
+34
+35    <permission
+35-->[androidx.core:core:1.13.1] /Users/razataiab/.gradle/caches/8.12/transforms/d480ced542fd04caff67621130820f5f/transformed/core-1.13.1/AndroidManifest.xml:22:5-24:47
+36        android:name="com.example.receipt_scanner.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+36-->[androidx.core:core:1.13.1] /Users/razataiab/.gradle/caches/8.12/transforms/d480ced542fd04caff67621130820f5f/transformed/core-1.13.1/AndroidManifest.xml:23:9-81
+37        android:protectionLevel="signature" />
+37-->[androidx.core:core:1.13.1] /Users/razataiab/.gradle/caches/8.12/transforms/d480ced542fd04caff67621130820f5f/transformed/core-1.13.1/AndroidManifest.xml:24:9-44
+38
+39    <uses-permission android:name="com.example.receipt_scanner.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" /> <!-- Although the *SdkVersion is captured in gradle build files, this is required for non gradle builds -->
+39-->[androidx.core:core:1.13.1] /Users/razataiab/.gradle/caches/8.12/transforms/d480ced542fd04caff67621130820f5f/transformed/core-1.13.1/AndroidManifest.xml:26:5-97
+39-->[androidx.core:core:1.13.1] /Users/razataiab/.gradle/caches/8.12/transforms/d480ced542fd04caff67621130820f5f/transformed/core-1.13.1/AndroidManifest.xml:26:22-94
+40    <!-- <uses-sdk android:minSdkVersion="14"/> -->
+41    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+41-->[com.google.android.datatransport:transport-backend-cct:2.3.3] /Users/razataiab/.gradle/caches/8.12/transforms/8659e27bcc8c1728f84644866a16a5fe/transformed/jetified-transport-backend-cct-2.3.3/AndroidManifest.xml:25:5-79
+41-->[com.google.android.datatransport:transport-backend-cct:2.3.3] /Users/razataiab/.gradle/caches/8.12/transforms/8659e27bcc8c1728f84644866a16a5fe/transformed/jetified-transport-backend-cct-2.3.3/AndroidManifest.xml:25:22-76
+42    <uses-permission android:name="android.permission.INTERNET" />
+42-->[com.google.android.datatransport:transport-backend-cct:2.3.3] /Users/razataiab/.gradle/caches/8.12/transforms/8659e27bcc8c1728f84644866a16a5fe/transformed/jetified-transport-backend-cct-2.3.3/AndroidManifest.xml:26:5-67
+42-->[com.google.android.datatransport:transport-backend-cct:2.3.3] /Users/razataiab/.gradle/caches/8.12/transforms/8659e27bcc8c1728f84644866a16a5fe/transformed/jetified-transport-backend-cct-2.3.3/AndroidManifest.xml:26:22-64
+43
+44    <application
+45        android:name="android.app.Application"
+45-->/Users/razataiab/Desktop/receipt-scanner-dashboard/android/app/src/main/AndroidManifest.xml:9:9-42
+46        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+46-->[androidx.core:core:1.13.1] /Users/razataiab/.gradle/caches/8.12/transforms/d480ced542fd04caff67621130820f5f/transformed/core-1.13.1/AndroidManifest.xml:28:18-86
+47        android:extractNativeLibs="false"
+48        android:icon="@mipmap/ic_launcher"
+48-->/Users/razataiab/Desktop/receipt-scanner-dashboard/android/app/src/main/AndroidManifest.xml:10:9-43
+49        android:label="receipt_scanner" >
+49-->/Users/razataiab/Desktop/receipt-scanner-dashboard/android/app/src/main/AndroidManifest.xml:8:9-40
+50        <activity
+50-->/Users/razataiab/Desktop/receipt-scanner-dashboard/android/app/src/main/AndroidManifest.xml:11:9-32:20
+51            android:name="com.example.receipt_scanner.MainActivity"
+51-->/Users/razataiab/Desktop/receipt-scanner-dashboard/android/app/src/main/AndroidManifest.xml:12:13-41
+52            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+52-->/Users/razataiab/Desktop/receipt-scanner-dashboard/android/app/src/main/AndroidManifest.xml:17:13-163
+53            android:exported="true"
+53-->/Users/razataiab/Desktop/receipt-scanner-dashboard/android/app/src/main/AndroidManifest.xml:13:13-36
+54            android:hardwareAccelerated="true"
+54-->/Users/razataiab/Desktop/receipt-scanner-dashboard/android/app/src/main/AndroidManifest.xml:18:13-47
+55            android:launchMode="singleTop"
+55-->/Users/razataiab/Desktop/receipt-scanner-dashboard/android/app/src/main/AndroidManifest.xml:14:13-43
+56            android:taskAffinity=""
+56-->/Users/razataiab/Desktop/receipt-scanner-dashboard/android/app/src/main/AndroidManifest.xml:15:13-36
+57            android:theme="@style/LaunchTheme"
+57-->/Users/razataiab/Desktop/receipt-scanner-dashboard/android/app/src/main/AndroidManifest.xml:16:13-47
+58            android:windowSoftInputMode="adjustResize" >
+58-->/Users/razataiab/Desktop/receipt-scanner-dashboard/android/app/src/main/AndroidManifest.xml:19:13-55
+59
+60            <!--
+61                 Specifies an Android theme to apply to this Activity as soon as
+62                 the Android process has started. This theme is visible to the user
+63                 while the Flutter UI initializes. After that, this theme continues
+64                 to determine the Window background behind the Flutter UI.
+65            -->
+66            <meta-data
+66-->/Users/razataiab/Desktop/receipt-scanner-dashboard/android/app/src/main/AndroidManifest.xml:24:13-27:17
+67                android:name="io.flutter.embedding.android.NormalTheme"
+67-->/Users/razataiab/Desktop/receipt-scanner-dashboard/android/app/src/main/AndroidManifest.xml:25:15-70
+68                android:resource="@style/NormalTheme" />
+68-->/Users/razataiab/Desktop/receipt-scanner-dashboard/android/app/src/main/AndroidManifest.xml:26:15-52
+69
+70            <intent-filter>
+70-->/Users/razataiab/Desktop/receipt-scanner-dashboard/android/app/src/main/AndroidManifest.xml:28:13-31:29
+71                <action android:name="android.intent.action.MAIN" />
+71-->/Users/razataiab/Desktop/receipt-scanner-dashboard/android/app/src/main/AndroidManifest.xml:29:17-68
+71-->/Users/razataiab/Desktop/receipt-scanner-dashboard/android/app/src/main/AndroidManifest.xml:29:25-66
+72
+73                <category android:name="android.intent.category.LAUNCHER" />
+73-->/Users/razataiab/Desktop/receipt-scanner-dashboard/android/app/src/main/AndroidManifest.xml:30:17-76
+73-->/Users/razataiab/Desktop/receipt-scanner-dashboard/android/app/src/main/AndroidManifest.xml:30:27-74
+74            </intent-filter>
+75        </activity>
+76        <!--
+77             Don't delete the meta-data below.
+78             This is used by the Flutter tool to generate GeneratedPluginRegistrant.java
+79        -->
+80        <meta-data
+80-->/Users/razataiab/Desktop/receipt-scanner-dashboard/android/app/src/main/AndroidManifest.xml:35:9-37:33
+81            android:name="flutterEmbedding"
+81-->/Users/razataiab/Desktop/receipt-scanner-dashboard/android/app/src/main/AndroidManifest.xml:36:13-44
+82            android:value="2" />
+82-->/Users/razataiab/Desktop/receipt-scanner-dashboard/android/app/src/main/AndroidManifest.xml:37:13-30
+83
+84        <provider
+84-->[:image_picker_android] /Users/razataiab/.pub-cache/hosted/pub.dev/image_picker_android-0.8.12+23/android/build/intermediates/merged_manifest/release/processReleaseManifest/AndroidManifest.xml:9:9-17:20
+85            android:name="io.flutter.plugins.imagepicker.ImagePickerFileProvider"
+85-->[:image_picker_android] /Users/razataiab/.pub-cache/hosted/pub.dev/image_picker_android-0.8.12+23/android/build/intermediates/merged_manifest/release/processReleaseManifest/AndroidManifest.xml:10:13-82
+86            android:authorities="com.example.receipt_scanner.flutter.image_provider"
+86-->[:image_picker_android] /Users/razataiab/.pub-cache/hosted/pub.dev/image_picker_android-0.8.12+23/android/build/intermediates/merged_manifest/release/processReleaseManifest/AndroidManifest.xml:11:13-74
+87            android:exported="false"
+87-->[:image_picker_android] /Users/razataiab/.pub-cache/hosted/pub.dev/image_picker_android-0.8.12+23/android/build/intermediates/merged_manifest/release/processReleaseManifest/AndroidManifest.xml:12:13-37
+88            android:grantUriPermissions="true" >
+88-->[:image_picker_android] /Users/razataiab/.pub-cache/hosted/pub.dev/image_picker_android-0.8.12+23/android/build/intermediates/merged_manifest/release/processReleaseManifest/AndroidManifest.xml:13:13-47
+89            <meta-data
+89-->[:image_picker_android] /Users/razataiab/.pub-cache/hosted/pub.dev/image_picker_android-0.8.12+23/android/build/intermediates/merged_manifest/release/processReleaseManifest/AndroidManifest.xml:14:13-16:75
+90                android:name="android.support.FILE_PROVIDER_PATHS"
+90-->[:image_picker_android] /Users/razataiab/.pub-cache/hosted/pub.dev/image_picker_android-0.8.12+23/android/build/intermediates/merged_manifest/release/processReleaseManifest/AndroidManifest.xml:15:17-67
+91                android:resource="@xml/flutter_image_picker_file_paths" />
+91-->[:image_picker_android] /Users/razataiab/.pub-cache/hosted/pub.dev/image_picker_android-0.8.12+23/android/build/intermediates/merged_manifest/release/processReleaseManifest/AndroidManifest.xml:16:17-72
+92        </provider> <!-- Trigger Google Play services to install the backported photo picker module. -->
+93        <service
+93-->[:image_picker_android] /Users/razataiab/.pub-cache/hosted/pub.dev/image_picker_android-0.8.12+23/android/build/intermediates/merged_manifest/release/processReleaseManifest/AndroidManifest.xml:19:9-31:19
+94            android:name="com.google.android.gms.metadata.ModuleDependencies"
+94-->[:image_picker_android] /Users/razataiab/.pub-cache/hosted/pub.dev/image_picker_android-0.8.12+23/android/build/intermediates/merged_manifest/release/processReleaseManifest/AndroidManifest.xml:20:13-78
+95            android:enabled="false"
+95-->[:image_picker_android] /Users/razataiab/.pub-cache/hosted/pub.dev/image_picker_android-0.8.12+23/android/build/intermediates/merged_manifest/release/processReleaseManifest/AndroidManifest.xml:21:13-36
+96            android:exported="false" >
+96-->[:image_picker_android] /Users/razataiab/.pub-cache/hosted/pub.dev/image_picker_android-0.8.12+23/android/build/intermediates/merged_manifest/release/processReleaseManifest/AndroidManifest.xml:22:13-37
+97            <intent-filter>
+97-->[:image_picker_android] /Users/razataiab/.pub-cache/hosted/pub.dev/image_picker_android-0.8.12+23/android/build/intermediates/merged_manifest/release/processReleaseManifest/AndroidManifest.xml:24:13-26:29
+98                <action android:name="com.google.android.gms.metadata.MODULE_DEPENDENCIES" />
+98-->[:image_picker_android] /Users/razataiab/.pub-cache/hosted/pub.dev/image_picker_android-0.8.12+23/android/build/intermediates/merged_manifest/release/processReleaseManifest/AndroidManifest.xml:25:17-94
+98-->[:image_picker_android] /Users/razataiab/.pub-cache/hosted/pub.dev/image_picker_android-0.8.12+23/android/build/intermediates/merged_manifest/release/processReleaseManifest/AndroidManifest.xml:25:25-91
+99            </intent-filter>
+100
+101            <meta-data
+101-->[:image_picker_android] /Users/razataiab/.pub-cache/hosted/pub.dev/image_picker_android-0.8.12+23/android/build/intermediates/merged_manifest/release/processReleaseManifest/AndroidManifest.xml:28:13-30:36
+102                android:name="photopicker_activity:0:required"
+102-->[:image_picker_android] /Users/razataiab/.pub-cache/hosted/pub.dev/image_picker_android-0.8.12+23/android/build/intermediates/merged_manifest/release/processReleaseManifest/AndroidManifest.xml:29:17-63
+103                android:value="" />
+103-->[:image_picker_android] /Users/razataiab/.pub-cache/hosted/pub.dev/image_picker_android-0.8.12+23/android/build/intermediates/merged_manifest/release/processReleaseManifest/AndroidManifest.xml:30:17-33
+104        </service>
+105
+106        <activity
+106-->[:url_launcher_android] /Users/razataiab/.pub-cache/hosted/pub.dev/url_launcher_android-6.3.16/android/build/intermediates/merged_manifest/release/processReleaseManifest/AndroidManifest.xml:8:9-11:74
+107            android:name="io.flutter.plugins.urllauncher.WebViewActivity"
+107-->[:url_launcher_android] /Users/razataiab/.pub-cache/hosted/pub.dev/url_launcher_android-6.3.16/android/build/intermediates/merged_manifest/release/processReleaseManifest/AndroidManifest.xml:9:13-74
+108            android:exported="false"
+108-->[:url_launcher_android] /Users/razataiab/.pub-cache/hosted/pub.dev/url_launcher_android-6.3.16/android/build/intermediates/merged_manifest/release/processReleaseManifest/AndroidManifest.xml:10:13-37
+109            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" />
+109-->[:url_launcher_android] /Users/razataiab/.pub-cache/hosted/pub.dev/url_launcher_android-6.3.16/android/build/intermediates/merged_manifest/release/processReleaseManifest/AndroidManifest.xml:11:13-71
+110
+111        <service
+111-->[com.google.android.gms:play-services-mlkit-text-recognition-common:19.1.0] /Users/razataiab/.gradle/caches/8.12/transforms/6278d876752340fc7f736911c6b57da7/transformed/jetified-play-services-mlkit-text-recognition-common-19.1.0/AndroidManifest.xml:9:9-15:19
+112            android:name="com.google.mlkit.common.internal.MlKitComponentDiscoveryService"
+112-->[com.google.android.gms:play-services-mlkit-text-recognition-common:19.1.0] /Users/razataiab/.gradle/caches/8.12/transforms/6278d876752340fc7f736911c6b57da7/transformed/jetified-play-services-mlkit-text-recognition-common-19.1.0/AndroidManifest.xml:10:13-91
+113            android:directBootAware="true"
+113-->[com.google.mlkit:common:18.11.0] /Users/razataiab/.gradle/caches/8.12/transforms/03eb388d3933f01af032a59f8a48c474/transformed/jetified-common-18.11.0/AndroidManifest.xml:17:13-43
+114            android:exported="false" >
+114-->[com.google.android.gms:play-services-mlkit-text-recognition-common:19.1.0] /Users/razataiab/.gradle/caches/8.12/transforms/6278d876752340fc7f736911c6b57da7/transformed/jetified-play-services-mlkit-text-recognition-common-19.1.0/AndroidManifest.xml:11:13-37
+115            <meta-data
+115-->[com.google.android.gms:play-services-mlkit-text-recognition-common:19.1.0] /Users/razataiab/.gradle/caches/8.12/transforms/6278d876752340fc7f736911c6b57da7/transformed/jetified-play-services-mlkit-text-recognition-common-19.1.0/AndroidManifest.xml:12:13-14:85
+116                android:name="com.google.firebase.components:com.google.mlkit.vision.text.internal.TextRegistrar"
+116-->[com.google.android.gms:play-services-mlkit-text-recognition-common:19.1.0] /Users/razataiab/.gradle/caches/8.12/transforms/6278d876752340fc7f736911c6b57da7/transformed/jetified-play-services-mlkit-text-recognition-common-19.1.0/AndroidManifest.xml:13:17-114
+117                android:value="com.google.firebase.components.ComponentRegistrar" />
+117-->[com.google.android.gms:play-services-mlkit-text-recognition-common:19.1.0] /Users/razataiab/.gradle/caches/8.12/transforms/6278d876752340fc7f736911c6b57da7/transformed/jetified-play-services-mlkit-text-recognition-common-19.1.0/AndroidManifest.xml:14:17-82
+118            <meta-data
+118-->[com.google.mlkit:vision-common:17.3.0] /Users/razataiab/.gradle/caches/8.12/transforms/5b2253f4e6a43bf128575bac2c09bc7c/transformed/jetified-vision-common-17.3.0/AndroidManifest.xml:12:13-14:85
+119                android:name="com.google.firebase.components:com.google.mlkit.vision.common.internal.VisionCommonRegistrar"
+119-->[com.google.mlkit:vision-common:17.3.0] /Users/razataiab/.gradle/caches/8.12/transforms/5b2253f4e6a43bf128575bac2c09bc7c/transformed/jetified-vision-common-17.3.0/AndroidManifest.xml:13:17-124
+120                android:value="com.google.firebase.components.ComponentRegistrar" />
+120-->[com.google.mlkit:vision-common:17.3.0] /Users/razataiab/.gradle/caches/8.12/transforms/5b2253f4e6a43bf128575bac2c09bc7c/transformed/jetified-vision-common-17.3.0/AndroidManifest.xml:14:17-82
+121            <meta-data
+121-->[com.google.mlkit:common:18.11.0] /Users/razataiab/.gradle/caches/8.12/transforms/03eb388d3933f01af032a59f8a48c474/transformed/jetified-common-18.11.0/AndroidManifest.xml:20:13-22:85
+122                android:name="com.google.firebase.components:com.google.mlkit.common.internal.CommonComponentRegistrar"
+122-->[com.google.mlkit:common:18.11.0] /Users/razataiab/.gradle/caches/8.12/transforms/03eb388d3933f01af032a59f8a48c474/transformed/jetified-common-18.11.0/AndroidManifest.xml:21:17-120
+123                android:value="com.google.firebase.components.ComponentRegistrar" />
+123-->[com.google.mlkit:common:18.11.0] /Users/razataiab/.gradle/caches/8.12/transforms/03eb388d3933f01af032a59f8a48c474/transformed/jetified-common-18.11.0/AndroidManifest.xml:22:17-82
+124        </service>
+125
+126        <provider
+126-->[com.google.mlkit:common:18.11.0] /Users/razataiab/.gradle/caches/8.12/transforms/03eb388d3933f01af032a59f8a48c474/transformed/jetified-common-18.11.0/AndroidManifest.xml:9:9-13:38
+127            android:name="com.google.mlkit.common.internal.MlKitInitProvider"
+127-->[com.google.mlkit:common:18.11.0] /Users/razataiab/.gradle/caches/8.12/transforms/03eb388d3933f01af032a59f8a48c474/transformed/jetified-common-18.11.0/AndroidManifest.xml:10:13-78
+128            android:authorities="com.example.receipt_scanner.mlkitinitprovider"
+128-->[com.google.mlkit:common:18.11.0] /Users/razataiab/.gradle/caches/8.12/transforms/03eb388d3933f01af032a59f8a48c474/transformed/jetified-common-18.11.0/AndroidManifest.xml:11:13-69
+129            android:exported="false"
+129-->[com.google.mlkit:common:18.11.0] /Users/razataiab/.gradle/caches/8.12/transforms/03eb388d3933f01af032a59f8a48c474/transformed/jetified-common-18.11.0/AndroidManifest.xml:12:13-37
+130            android:initOrder="99" />
+130-->[com.google.mlkit:common:18.11.0] /Users/razataiab/.gradle/caches/8.12/transforms/03eb388d3933f01af032a59f8a48c474/transformed/jetified-common-18.11.0/AndroidManifest.xml:13:13-35
+131
+132        <activity
+132-->[com.google.android.gms:play-services-base:18.5.0] /Users/razataiab/.gradle/caches/8.12/transforms/14211d153b037e112f0254bde6052f8f/transformed/jetified-play-services-base-18.5.0/AndroidManifest.xml:5:9-173
+133            android:name="com.google.android.gms.common.api.GoogleApiActivity"
+133-->[com.google.android.gms:play-services-base:18.5.0] /Users/razataiab/.gradle/caches/8.12/transforms/14211d153b037e112f0254bde6052f8f/transformed/jetified-play-services-base-18.5.0/AndroidManifest.xml:5:19-85
+134            android:exported="false"
+134-->[com.google.android.gms:play-services-base:18.5.0] /Users/razataiab/.gradle/caches/8.12/transforms/14211d153b037e112f0254bde6052f8f/transformed/jetified-play-services-base-18.5.0/AndroidManifest.xml:5:146-170
+135            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+135-->[com.google.android.gms:play-services-base:18.5.0] /Users/razataiab/.gradle/caches/8.12/transforms/14211d153b037e112f0254bde6052f8f/transformed/jetified-play-services-base-18.5.0/AndroidManifest.xml:5:86-145
+136
+137        <meta-data
+137-->[com.google.android.gms:play-services-basement:18.4.0] /Users/razataiab/.gradle/caches/8.12/transforms/ba6fc0af4cb0203040303884a897ae5b/transformed/jetified-play-services-basement-18.4.0/AndroidManifest.xml:6:9-122
+138            android:name="com.google.android.gms.version"
+138-->[com.google.android.gms:play-services-basement:18.4.0] /Users/razataiab/.gradle/caches/8.12/transforms/ba6fc0af4cb0203040303884a897ae5b/transformed/jetified-play-services-basement-18.4.0/AndroidManifest.xml:6:20-65
+139            android:value="@integer/google_play_services_version" />
+139-->[com.google.android.gms:play-services-basement:18.4.0] /Users/razataiab/.gradle/caches/8.12/transforms/ba6fc0af4cb0203040303884a897ae5b/transformed/jetified-play-services-basement-18.4.0/AndroidManifest.xml:6:66-119
+140
+141        <uses-library
+141-->[androidx.window:window:1.2.0] /Users/razataiab/.gradle/caches/8.12/transforms/f27ac8a87f06dea372a75a1ffce93706/transformed/jetified-window-1.2.0/AndroidManifest.xml:23:9-25:40
+142            android:name="androidx.window.extensions"
+142-->[androidx.window:window:1.2.0] /Users/razataiab/.gradle/caches/8.12/transforms/f27ac8a87f06dea372a75a1ffce93706/transformed/jetified-window-1.2.0/AndroidManifest.xml:24:13-54
+143            android:required="false" />
+143-->[androidx.window:window:1.2.0] /Users/razataiab/.gradle/caches/8.12/transforms/f27ac8a87f06dea372a75a1ffce93706/transformed/jetified-window-1.2.0/AndroidManifest.xml:25:13-37
+144        <uses-library
+144-->[androidx.window:window:1.2.0] /Users/razataiab/.gradle/caches/8.12/transforms/f27ac8a87f06dea372a75a1ffce93706/transformed/jetified-window-1.2.0/AndroidManifest.xml:26:9-28:40
+145            android:name="androidx.window.sidecar"
+145-->[androidx.window:window:1.2.0] /Users/razataiab/.gradle/caches/8.12/transforms/f27ac8a87f06dea372a75a1ffce93706/transformed/jetified-window-1.2.0/AndroidManifest.xml:27:13-51
+146            android:required="false" />
+146-->[androidx.window:window:1.2.0] /Users/razataiab/.gradle/caches/8.12/transforms/f27ac8a87f06dea372a75a1ffce93706/transformed/jetified-window-1.2.0/AndroidManifest.xml:28:13-37
+147
+148        <provider
+148-->[androidx.emoji2:emoji2:1.2.0] /Users/razataiab/.gradle/caches/8.12/transforms/5967779614d14c70348f9cd1d57dce79/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:24:9-32:20
+149            android:name="androidx.startup.InitializationProvider"
+149-->[androidx.emoji2:emoji2:1.2.0] /Users/razataiab/.gradle/caches/8.12/transforms/5967779614d14c70348f9cd1d57dce79/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:25:13-67
+150            android:authorities="com.example.receipt_scanner.androidx-startup"
+150-->[androidx.emoji2:emoji2:1.2.0] /Users/razataiab/.gradle/caches/8.12/transforms/5967779614d14c70348f9cd1d57dce79/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:26:13-68
+151            android:exported="false" >
+151-->[androidx.emoji2:emoji2:1.2.0] /Users/razataiab/.gradle/caches/8.12/transforms/5967779614d14c70348f9cd1d57dce79/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:27:13-37
+152            <meta-data
+152-->[androidx.emoji2:emoji2:1.2.0] /Users/razataiab/.gradle/caches/8.12/transforms/5967779614d14c70348f9cd1d57dce79/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:29:13-31:52
+153                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+153-->[androidx.emoji2:emoji2:1.2.0] /Users/razataiab/.gradle/caches/8.12/transforms/5967779614d14c70348f9cd1d57dce79/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:30:17-75
+154                android:value="androidx.startup" />
+154-->[androidx.emoji2:emoji2:1.2.0] /Users/razataiab/.gradle/caches/8.12/transforms/5967779614d14c70348f9cd1d57dce79/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:31:17-49
+155            <meta-data
+155-->[androidx.lifecycle:lifecycle-process:2.7.0] /Users/razataiab/.gradle/caches/8.12/transforms/9b432850b5693058e35b1af97cfd2b2a/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:29:13-31:52
+156                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+156-->[androidx.lifecycle:lifecycle-process:2.7.0] /Users/razataiab/.gradle/caches/8.12/transforms/9b432850b5693058e35b1af97cfd2b2a/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:30:17-78
+157                android:value="androidx.startup" />
+157-->[androidx.lifecycle:lifecycle-process:2.7.0] /Users/razataiab/.gradle/caches/8.12/transforms/9b432850b5693058e35b1af97cfd2b2a/transformed/jetified-lifecycle-process-2.7.0/AndroidManifest.xml:31:17-49
+158            <meta-data
+158-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/razataiab/.gradle/caches/8.12/transforms/9454a414eda68da7c361228b46c996ac/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:29:13-31:52
+159                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+159-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/razataiab/.gradle/caches/8.12/transforms/9454a414eda68da7c361228b46c996ac/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:30:17-85
+160                android:value="androidx.startup" />
+160-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/razataiab/.gradle/caches/8.12/transforms/9454a414eda68da7c361228b46c996ac/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:31:17-49
+161        </provider>
+162
+163        <receiver
+163-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/razataiab/.gradle/caches/8.12/transforms/9454a414eda68da7c361228b46c996ac/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:34:9-52:20
+164            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+164-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/razataiab/.gradle/caches/8.12/transforms/9454a414eda68da7c361228b46c996ac/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:35:13-76
+165            android:directBootAware="false"
+165-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/razataiab/.gradle/caches/8.12/transforms/9454a414eda68da7c361228b46c996ac/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:36:13-44
+166            android:enabled="true"
+166-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/razataiab/.gradle/caches/8.12/transforms/9454a414eda68da7c361228b46c996ac/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:37:13-35
+167            android:exported="true"
+167-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/razataiab/.gradle/caches/8.12/transforms/9454a414eda68da7c361228b46c996ac/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:38:13-36
+168            android:permission="android.permission.DUMP" >
+168-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/razataiab/.gradle/caches/8.12/transforms/9454a414eda68da7c361228b46c996ac/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:39:13-57
+169            <intent-filter>
+169-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/razataiab/.gradle/caches/8.12/transforms/9454a414eda68da7c361228b46c996ac/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:40:13-42:29
+170                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+170-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/razataiab/.gradle/caches/8.12/transforms/9454a414eda68da7c361228b46c996ac/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:41:17-91
+170-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/razataiab/.gradle/caches/8.12/transforms/9454a414eda68da7c361228b46c996ac/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:41:25-88
+171            </intent-filter>
+172            <intent-filter>
+172-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/razataiab/.gradle/caches/8.12/transforms/9454a414eda68da7c361228b46c996ac/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:43:13-45:29
+173                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+173-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/razataiab/.gradle/caches/8.12/transforms/9454a414eda68da7c361228b46c996ac/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:44:17-85
+173-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/razataiab/.gradle/caches/8.12/transforms/9454a414eda68da7c361228b46c996ac/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:44:25-82
+174            </intent-filter>
+175            <intent-filter>
+175-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/razataiab/.gradle/caches/8.12/transforms/9454a414eda68da7c361228b46c996ac/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:46:13-48:29
+176                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+176-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/razataiab/.gradle/caches/8.12/transforms/9454a414eda68da7c361228b46c996ac/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:47:17-88
+176-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/razataiab/.gradle/caches/8.12/transforms/9454a414eda68da7c361228b46c996ac/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:47:25-85
+177            </intent-filter>
+178            <intent-filter>
+178-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/razataiab/.gradle/caches/8.12/transforms/9454a414eda68da7c361228b46c996ac/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:49:13-51:29
+179                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+179-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/razataiab/.gradle/caches/8.12/transforms/9454a414eda68da7c361228b46c996ac/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:50:17-95
+179-->[androidx.profileinstaller:profileinstaller:1.3.1] /Users/razataiab/.gradle/caches/8.12/transforms/9454a414eda68da7c361228b46c996ac/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:50:25-92
+180            </intent-filter>
+181        </receiver>
+182
+183        <service
+183-->[com.google.android.datatransport:transport-backend-cct:2.3.3] /Users/razataiab/.gradle/caches/8.12/transforms/8659e27bcc8c1728f84644866a16a5fe/transformed/jetified-transport-backend-cct-2.3.3/AndroidManifest.xml:29:9-35:19
+184            android:name="com.google.android.datatransport.runtime.backends.TransportBackendDiscovery"
+184-->[com.google.android.datatransport:transport-backend-cct:2.3.3] /Users/razataiab/.gradle/caches/8.12/transforms/8659e27bcc8c1728f84644866a16a5fe/transformed/jetified-transport-backend-cct-2.3.3/AndroidManifest.xml:30:13-103
+185            android:exported="false" >
+185-->[com.google.android.datatransport:transport-backend-cct:2.3.3] /Users/razataiab/.gradle/caches/8.12/transforms/8659e27bcc8c1728f84644866a16a5fe/transformed/jetified-transport-backend-cct-2.3.3/AndroidManifest.xml:31:13-37
+186            <meta-data
+186-->[com.google.android.datatransport:transport-backend-cct:2.3.3] /Users/razataiab/.gradle/caches/8.12/transforms/8659e27bcc8c1728f84644866a16a5fe/transformed/jetified-transport-backend-cct-2.3.3/AndroidManifest.xml:32:13-34:39
+187                android:name="backend:com.google.android.datatransport.cct.CctBackendFactory"
+187-->[com.google.android.datatransport:transport-backend-cct:2.3.3] /Users/razataiab/.gradle/caches/8.12/transforms/8659e27bcc8c1728f84644866a16a5fe/transformed/jetified-transport-backend-cct-2.3.3/AndroidManifest.xml:33:17-94
+188                android:value="cct" />
+188-->[com.google.android.datatransport:transport-backend-cct:2.3.3] /Users/razataiab/.gradle/caches/8.12/transforms/8659e27bcc8c1728f84644866a16a5fe/transformed/jetified-transport-backend-cct-2.3.3/AndroidManifest.xml:34:17-36
+189        </service>
+190        <service
+190-->[com.google.android.datatransport:transport-runtime:2.2.6] /Users/razataiab/.gradle/caches/8.12/transforms/4eedcf1cc0efbe715503c1579d3b8069/transformed/jetified-transport-runtime-2.2.6/AndroidManifest.xml:26:9-30:19
+191            android:name="com.google.android.datatransport.runtime.scheduling.jobscheduling.JobInfoSchedulerService"
+191-->[com.google.android.datatransport:transport-runtime:2.2.6] /Users/razataiab/.gradle/caches/8.12/transforms/4eedcf1cc0efbe715503c1579d3b8069/transformed/jetified-transport-runtime-2.2.6/AndroidManifest.xml:27:13-117
+192            android:exported="false"
+192-->[com.google.android.datatransport:transport-runtime:2.2.6] /Users/razataiab/.gradle/caches/8.12/transforms/4eedcf1cc0efbe715503c1579d3b8069/transformed/jetified-transport-runtime-2.2.6/AndroidManifest.xml:28:13-37
+193            android:permission="android.permission.BIND_JOB_SERVICE" >
+193-->[com.google.android.datatransport:transport-runtime:2.2.6] /Users/razataiab/.gradle/caches/8.12/transforms/4eedcf1cc0efbe715503c1579d3b8069/transformed/jetified-transport-runtime-2.2.6/AndroidManifest.xml:29:13-69
+194        </service>
+195
+196        <receiver
+196-->[com.google.android.datatransport:transport-runtime:2.2.6] /Users/razataiab/.gradle/caches/8.12/transforms/4eedcf1cc0efbe715503c1579d3b8069/transformed/jetified-transport-runtime-2.2.6/AndroidManifest.xml:32:9-34:40
+197            android:name="com.google.android.datatransport.runtime.scheduling.jobscheduling.AlarmManagerSchedulerBroadcastReceiver"
+197-->[com.google.android.datatransport:transport-runtime:2.2.6] /Users/razataiab/.gradle/caches/8.12/transforms/4eedcf1cc0efbe715503c1579d3b8069/transformed/jetified-transport-runtime-2.2.6/AndroidManifest.xml:33:13-132
+198            android:exported="false" />
+198-->[com.google.android.datatransport:transport-runtime:2.2.6] /Users/razataiab/.gradle/caches/8.12/transforms/4eedcf1cc0efbe715503c1579d3b8069/transformed/jetified-transport-runtime-2.2.6/AndroidManifest.xml:34:13-37
+199    </application>
+200
+201</manifest>

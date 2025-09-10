@@ -1,0 +1,1 @@
+io.flutter.receipt_scanner_plugin

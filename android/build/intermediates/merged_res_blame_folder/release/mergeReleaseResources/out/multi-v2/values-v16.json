@@ -1,0 +1,34 @@
+{
+    "logs": [
+        {
+            "outputFile": "io.flutter.receipt_scanner_plugin-release-7:/values-v16/values-v16.xml",
+            "map": [
+                {
+                    "source": "/Users/razataiab/.gradle/caches/8.12/transforms/055d214972dfc0229173cd4cc44c742d/transformed/core-1.2.0/res/values-v16/values-v16.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "65",
+                        "endOffsets": "116"
+                    }
+                }
+            ]
+        },
+        {
+            "outputFile": "io.flutter.receipt_scanner_plugin-mergeReleaseResources-5:/values-v16/values-v16.xml",
+            "map": [
+                {
+                    "source": "/Users/razataiab/.gradle/caches/8.12/transforms/055d214972dfc0229173cd4cc44c742d/transformed/core-1.2.0/res/values-v16/values-v16.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "65",
+                        "endOffsets": "116"
+                    }
+                }
+            ]
+        }
+    ]
+}
