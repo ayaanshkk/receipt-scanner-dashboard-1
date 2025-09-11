@@ -13,8 +13,7 @@ import 'dart:convert';
 import 'package:url_launcher/url_launcher.dart';
 
 // Configurable server URL
-const String serverUrl = 'https://receipt-scanner-backend-0d53818d62b3.herokuapp.com/api/receipts/process-receipt'; // For Android emulator
-// const String serverUrl = 'http://192.168.0.66:3001/ocr'; // For physical devices
+const String serverUrl = 'https://receipt-scanner-backend-0d53818d62b3.herokuapp.com/api/receipts/process-receipt';
 
 class HomePage extends StatelessWidget {
   final String userId;
@@ -90,43 +89,62 @@ class HomePage extends StatelessWidget {
             Fluttertoast.showToast(
               msg: 'Server error for image: ${response.statusCode}. Using local OCR parsing.',
             );
-            // Fallback: Parse total locally
-            String total = '0.00';
-            String? date;
-            String? merchant;
+            
+            // Fallback: Parse data locally with new VAT structure
+            String description = 'Purchase';
+            double totalExclVat = 0.0;
+            double vatPercentage = 5.0; // Default UAE VAT
+            double vatAmountAed = 0.0;
+            double totalInclVat = 0.0;
+            
             for (var block in recognizedText.blocks) {
               final text = block.text.toLowerCase();
-              // Extract total
-              if (text.contains('total') || text.contains('amount')) {
+              
+              // Extract total amount (look for patterns like "total: 100.50")
+              final totalMatch = RegExp(r'total[:\s]*(\d+\.?\d*)').firstMatch(text);
+              if (totalMatch != null) {
+                totalInclVat = double.tryParse(totalMatch.group(1) ?? '0') ?? 0.0;
+              }
+              
+              // Extract VAT information
+              final vatMatch = RegExp(r'vat[:\s]*(\d+\.?\d*)').firstMatch(text);
+              if (vatMatch != null) {
+                vatAmountAed = double.tryParse(vatMatch.group(1) ?? '0') ?? 0.0;
+              }
+              
+              // Try to extract merchant/description from first non-empty line
+              if (description == 'Purchase' && block.text.trim().isNotEmpty) {
                 final lines = block.text.split('\n');
                 for (var line in lines) {
-                  final match = RegExp(r'(?:£|\$|€)?\s*(\d+\.\d{2})').firstMatch(line);
-                  if (match != null) {
-                    total = match.group(1) ?? '0.00';
+                  if (line.trim().isNotEmpty && line.length > 2) {
+                    description = line.trim();
                     break;
                   }
                 }
               }
-              // Extract merchant (simple heuristic: first line often contains the store name)
-              if (merchant == null && block.text.isNotEmpty) {
-                merchant = block.text.split('\n').first;
-              }
-              // Extract date (look for date patterns like DD/MM/YYYY or YYYY-MM-DD)
-              final dateMatch = RegExp(r'\d{1,2}/\d{1,2}/\d{2,4}|\d{4}-\d{2}-\d{2}').firstMatch(block.text);
-              if (dateMatch != null) {
-                date = dateMatch.group(0);
-              }
+            }
+            
+            // Calculate missing values
+            if (totalInclVat > 0 && vatAmountAed > 0) {
+              totalExclVat = totalInclVat - vatAmountAed;
+              vatPercentage = (vatAmountAed / totalExclVat) * 100;
+            } else if (totalInclVat > 0) {
+              // Assume 5% VAT
+              totalExclVat = totalInclVat / 1.05;
+              vatAmountAed = totalInclVat - totalExclVat;
+              vatPercentage = 5.0;
             }
 
             if (!context.mounted) return;
 
             final result = ReceiptEntry(
               imageFile: imageFile,
-              merchant: merchant ?? 'Unknown Store',
-              currency: '£',
-              total: total,
-              category: 'General',
-              date: date != null ? DateTime.tryParse(date) ?? DateTime.now() : DateTime.now(),
+              description: description,
+              totalExclVat: totalExclVat,
+              vatPercentage: vatPercentage,
+              vatAmountAed: vatAmountAed,
+              totalInclVat: totalInclVat,
+              date: DateTime.now(),
             );
 
             final confirmedResult = await Navigator.push<ReceiptEntry>(
@@ -134,13 +152,11 @@ class HomePage extends StatelessWidget {
               MaterialPageRoute(
                 builder: (_) => ResultScreen(
                   data: jsonEncode({
-                    'establishment': merchant ?? 'Unknown Store',
-                    'total': total,
-                    'currency': '£',
-                    'category': 'General',
-                    'date': date ?? DateTime.now().toIso8601String(),
-                    'VAT': null,
-                    'method_of_payment': null,
+                    'description': description,
+                    'total_excl_vat': totalExclVat,
+                    'vat_percentage': vatPercentage,
+                    'vat_amount_aed': vatAmountAed,
+                    'total_incl_vat': totalInclVat,
                   }),
                   imageFile: imageFile,
                 ),
@@ -412,9 +428,9 @@ class ReceiptCard extends StatelessWidget {
               
               // Amount
               Text(
-                '${entry.currency}${entry.total}',
+                entry.formattedTotalInclVat,
                 style: TextStyle(
-                  fontSize: 0,
+                  fontSize: 16,
                   fontWeight: FontWeight.w700,
                   color: Theme.of(context).textTheme.titleLarge?.color,
                   letterSpacing: -0.5,
@@ -422,7 +438,7 @@ class ReceiptCard extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               
-              // Store name with subtle background
+              // Description with subtle background
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
@@ -432,13 +448,15 @@ class ReceiptCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  entry.merchant,
+                  entry.description,
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                     color: storeColor,
                     letterSpacing: -0.1,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],

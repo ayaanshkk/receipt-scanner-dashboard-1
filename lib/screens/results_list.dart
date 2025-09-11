@@ -7,20 +7,41 @@ import 'package:receipt_scanner/screens/scan_receipts.dart';
 
 class ReceiptEntry {
   final File imageFile;
-  final String merchant;
-  final String currency;
-  final String total;
-  final String category;
+  final String description;
+  final double totalExclVat;
+  final double vatPercentage;
+  final double vatAmountAed;
+  final double totalInclVat;
   final DateTime date;
 
   ReceiptEntry({
     required this.imageFile,
-    required this.merchant,
-    required this.currency,
-    required this.total,
-    required this.category,
+    required this.description,
+    required this.totalExclVat,
+    required this.vatPercentage,
+    required this.vatAmountAed,
+    required this.totalInclVat,
     required this.date,
   });
+
+  // Convert to JSON for API calls
+  Map<String, dynamic> toJson() {
+    return {
+      'description': description,
+      'total_excl_vat': totalExclVat,
+      'vat_percentage': vatPercentage,
+      'vat_amount_aed': vatAmountAed,
+      'total_incl_vat': totalInclVat,
+      'date': DateFormat('dd/MM/yyyy').format(date),
+    };
+  }
+
+  // Format for display
+  String get formattedTotalInclVat => 'AED ${totalInclVat.toStringAsFixed(2)}';
+  String get formattedTotalExclVat => 'AED ${totalExclVat.toStringAsFixed(2)}';
+  String get formattedVatAmount => 'AED ${vatAmountAed.toStringAsFixed(2)}';
+  String get formattedVatPercentage => '${vatPercentage.toStringAsFixed(1)}%';
+  String get formattedDate => DateFormat('MMM dd, yyyy').format(date);
 }
 
 class ResultsListScreen extends StatefulWidget {
@@ -45,31 +66,8 @@ class _ResultsListScreenState extends State<ResultsListScreen> {
   List<ReceiptEntry> _filteredEntries = [];
   DateTime? _startDate;
   DateTime? _endDate;
-  List<String> _selectedCategories = [];
-
-  final List<String> _categories = [
-    'Residents Expenses',
-    'Rates & Water',
-    'Gas & Electric',
-    'Insurance',
-    'Advertising & Marketing',
-    'Telephone & Mobile',
-    'Stationery & Postage',
-    'Motor Fuel',
-    'Motor Repairs',
-    'Motor Insurance & Road Tax',
-    'Travel',
-    'Parking & Misc',
-    'H&S',
-    'Legal',
-    'Professional',
-    'Accountancy & Subscriptions',
-    'Repairs, Renewals & Maintenance',
-    'Cleaning, Waste & Pest Control',
-    'Donations',
-    'Fixed Assets',
-    'Misc & others'
-  ];
+  double? _minAmount;
+  double? _maxAmount;
 
   @override
   void initState() {
@@ -90,20 +88,19 @@ class _ResultsListScreenState extends State<ResultsListScreen> {
     setState(() {
       _filteredEntries = _allEntries.where((entry) {
         // Search query filtering
-        final merchantMatch = entry.merchant.toLowerCase().contains(query);
-        final categoryMatch = entry.category.toLowerCase().contains(query);
-        final currencyMatch = entry.currency.toLowerCase().contains(query);
-        final totalMatch = entry.total.toLowerCase().contains(query);
-        final searchMatch = query.isEmpty || merchantMatch || categoryMatch || currencyMatch || totalMatch;
+        final descriptionMatch = entry.description.toLowerCase().contains(query);
+        final amountMatch = entry.totalInclVat.toString().contains(query);
+        final searchMatch = query.isEmpty || descriptionMatch || amountMatch;
 
         // Date range filtering
         final dateMatch = (_startDate == null || !entry.date.isBefore(_startDate!)) &&
             (_endDate == null || !entry.date.isAfter(_endDate!));
 
-        // Category filtering
-        final categoryMatchFilter = _selectedCategories.isEmpty || _selectedCategories.contains(entry.category);
+        // Amount range filtering
+        final amountRangeMatch = (_minAmount == null || entry.totalInclVat >= _minAmount!) &&
+            (_maxAmount == null || entry.totalInclVat <= _maxAmount!);
 
-        return searchMatch && dateMatch && categoryMatchFilter;
+        return searchMatch && dateMatch && amountRangeMatch;
       }).toList();
     });
   }
@@ -112,7 +109,8 @@ class _ResultsListScreenState extends State<ResultsListScreen> {
     setState(() {
       _startDate = null;
       _endDate = null;
-      _selectedCategories = [];
+      _minAmount = null;
+      _maxAmount = null;
       _filterEntries();
     });
   }
@@ -137,11 +135,6 @@ class _ResultsListScreenState extends State<ResultsListScreen> {
     if (widget.onEntriesChanged != null) {
       widget.onEntriesChanged!(_allEntries);
     }
-  }
-
-  String _formatCurrency(String currency, String total) {
-    final hasSymbol = RegExp(r'^[£$€]').hasMatch(total.trim());
-    return hasSymbol ? total : '$currency $total';
   }
 
   Map<String, List<ReceiptEntry>> _groupByDate(List<ReceiptEntry> entries) {
@@ -186,15 +179,16 @@ class _ResultsListScreenState extends State<ResultsListScreen> {
       context: context,
       builder: (BuildContext context) {
         return FilterDialog(
-          categories: _categories,
-          selectedCategories: _selectedCategories,
           startDate: _startDate,
           endDate: _endDate,
-          onApply: (DateTime? newStartDate, DateTime? newEndDate, List<String> newCategories) {
+          minAmount: _minAmount,
+          maxAmount: _maxAmount,
+          onApply: (DateTime? newStartDate, DateTime? newEndDate, double? newMinAmount, double? newMaxAmount) {
             setState(() {
               _startDate = newStartDate;
               _endDate = newEndDate;
-              _selectedCategories = newCategories;
+              _minAmount = newMinAmount;
+              _maxAmount = newMaxAmount;
               _filterEntries();
             });
           },
@@ -278,7 +272,6 @@ class _ResultsListScreenState extends State<ResultsListScreen> {
 
   Widget _buildReceiptCard(ReceiptEntry entry, Color cardColor, bool isDark) {
     final textColour = isDark ? Colors.white : Colors.black;
-    final borderColour = isDark ? Colors.white : Colors.black;
 
     return GestureDetector(
       onLongPress: () => _showDeleteConfirmation(entry),
@@ -313,23 +306,33 @@ class _ResultsListScreenState extends State<ResultsListScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        entry.merchant,
+                        entry.description,
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
                           color: textColour,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        entry.formattedTotalInclVat,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: textColour,
+                        ),
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        _formatCurrency(entry.currency, entry.total),
+                        'VAT: ${entry.formattedVatAmount} (${entry.formattedVatPercentage})',
                         style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: textColour,
+                          fontSize: 12,
+                          color: textColour.withOpacity(0.7),
                         ),
                       ),
                     ],
@@ -338,21 +341,11 @@ class _ResultsListScreenState extends State<ResultsListScreen> {
               ),
               Padding(
                 padding: const EdgeInsets.only(right: 12, top: 12),
-                child: Align(
-                  alignment: Alignment.topRight,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: borderColour.withOpacity(0.54)),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Text(
-                      entry.category,
-                      style: const TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+                child: Text(
+                  entry.formattedDate,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: textColour.withOpacity(0.6),
                   ),
                 ),
               ),
@@ -369,7 +362,7 @@ class _ResultsListScreenState extends State<ResultsListScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Delete Receipt'),
-          content: Text('Are you sure you want to delete the receipt from ${entry.merchant}?'),
+          content: Text('Are you sure you want to delete the receipt: ${entry.description}?'),
           actions: [
             TextButton(
               child: const Text('Cancel'),
@@ -393,19 +386,19 @@ class _ResultsListScreenState extends State<ResultsListScreen> {
 }
 
 class FilterDialog extends StatefulWidget {
-  final List<String> categories;
-  final List<String> selectedCategories;
   final DateTime? startDate;
   final DateTime? endDate;
-  final Function(DateTime?, DateTime?, List<String>) onApply;
+  final double? minAmount;
+  final double? maxAmount;
+  final Function(DateTime?, DateTime?, double?, double?) onApply;
   final VoidCallback onClear;
 
   const FilterDialog({
     super.key,
-    required this.categories,
-    required this.selectedCategories,
     this.startDate,
     this.endDate,
+    this.minAmount,
+    this.maxAmount,
     required this.onApply,
     required this.onClear,
   });
@@ -417,14 +410,27 @@ class FilterDialog extends StatefulWidget {
 class _FilterDialogState extends State<FilterDialog> {
   late DateTime? _tempStartDate;
   late DateTime? _tempEndDate;
-  late List<String> _tempSelectedCategories;
+  late TextEditingController _minAmountController;
+  late TextEditingController _maxAmountController;
 
   @override
   void initState() {
     super.initState();
     _tempStartDate = widget.startDate;
     _tempEndDate = widget.endDate;
-    _tempSelectedCategories = List.from(widget.selectedCategories);
+    _minAmountController = TextEditingController(
+      text: widget.minAmount?.toStringAsFixed(2) ?? '',
+    );
+    _maxAmountController = TextEditingController(
+      text: widget.maxAmount?.toStringAsFixed(2) ?? '',
+    );
+  }
+
+  @override
+  void dispose() {
+    _minAmountController.dispose();
+    _maxAmountController.dispose();
+    super.dispose();
   }
 
   Future<void> _selectStartDate() async {
@@ -452,7 +458,7 @@ class _FilterDialogState extends State<FilterDialog> {
       setState(() {
         _tempStartDate = picked;
         if (_tempEndDate != null && _tempEndDate!.isBefore(_tempStartDate!)) {
-          _tempEndDate = null; // Reset end date if it's before start date
+          _tempEndDate = null;
         }
       });
     }
@@ -545,27 +551,34 @@ class _FilterDialogState extends State<FilterDialog> {
               ],
             ),
             const SizedBox(height: 16),
-            const Text('Categories', style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text('Amount Range (AED)', style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            ChipsChoice<String>.multiple(
-              value: _tempSelectedCategories,
-              onChanged: (val) => setState(() => _tempSelectedCategories = val),
-              choiceItems: C2Choice.listFrom<String, String>(
-                source: widget.categories,
-                value: (i, v) => v,
-                label: (i, v) => v,
-              ),
-              choiceStyle: C2ChoiceStyle(
-                color: isDark ? Colors.white : Colors.black,
-                borderColor: isDark ? Colors.white : Colors.black,
-                borderRadius: const BorderRadius.all(Radius.circular(8)),
-              ),
-              choiceActiveStyle: C2ChoiceStyle(
-                color: Colors.white,
-                brightness: Brightness.dark,
-                borderColor: const Color(0xFF29A165),
-              ),
-              wrapped: true,
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _minAmountController,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: const InputDecoration(
+                      labelText: 'Min Amount',
+                      border: OutlineInputBorder(),
+                      prefixText: 'AED ',
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: TextField(
+                    controller: _maxAmountController,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: const InputDecoration(
+                      labelText: 'Max Amount',
+                      border: OutlineInputBorder(),
+                      prefixText: 'AED ',
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -586,7 +599,32 @@ class _FilterDialogState extends State<FilterDialog> {
               );
               return;
             }
-            widget.onApply(_tempStartDate, _tempEndDate, _tempSelectedCategories);
+
+            double? minAmount;
+            double? maxAmount;
+            
+            try {
+              if (_minAmountController.text.isNotEmpty) {
+                minAmount = double.parse(_minAmountController.text);
+              }
+              if (_maxAmountController.text.isNotEmpty) {
+                maxAmount = double.parse(_maxAmountController.text);
+              }
+            } catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Please enter valid amounts')),
+              );
+              return;
+            }
+
+            if (minAmount != null && maxAmount != null && maxAmount < minAmount) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Max amount cannot be less than min amount')),
+              );
+              return;
+            }
+
+            widget.onApply(_tempStartDate, _tempEndDate, minAmount, maxAmount);
             Navigator.of(context).pop();
           },
           child: const Text(

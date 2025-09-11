@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		},
+		{
+			"path": "../../receipt-scanner-frontend"
+		},
+		{
+			"path": "../../receipt-scanner-backend"
+		}
+	]
+}
