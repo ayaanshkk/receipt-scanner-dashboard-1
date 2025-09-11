@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../theme_provider.dart';
 
 class SettingsPage extends StatefulWidget {
+  const SettingsPage({super.key});
+
   @override
   _SettingsPageState createState() => _SettingsPageState();
 }
@@ -14,7 +16,7 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
-    bool _isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+    bool isDarkMode = themeProvider.themeMode == ThemeMode.dark;
 
     // Adjust text theme for large text
     final textTheme = Theme.of(context).textTheme.copyWith(
@@ -31,12 +33,19 @@ class _SettingsPageState extends State<SettingsPage> {
 
     // Adjust theme for high contrast
     final highContrastTheme = Theme.of(context).copyWith(
-      primaryColor: _highContrast ? Colors.blueAccent : Theme.of(context).primaryColor,
+      primaryColor:
+          _highContrast ? Colors.blueAccent : Theme.of(context).primaryColor,
       textTheme: textTheme.apply(
-        bodyColor: _highContrast ? Colors.black87 : Theme.of(context).textTheme.bodyLarge?.color,
-        displayColor: _highContrast ? Colors.black87 : Theme.of(context).textTheme.bodyLarge?.color,
+        bodyColor: _highContrast
+            ? Colors.black87
+            : Theme.of(context).textTheme.bodyLarge?.color,
+        displayColor: _highContrast
+            ? Colors.black87
+            : Theme.of(context).textTheme.bodyLarge?.color,
       ),
-      scaffoldBackgroundColor: _highContrast ? Colors.white : Theme.of(context).scaffoldBackgroundColor,
+      scaffoldBackgroundColor: _highContrast
+          ? Colors.white
+          : Theme.of(context).scaffoldBackgroundColor,
     );
 
     return Theme(
@@ -50,26 +59,34 @@ class _SettingsPageState extends State<SettingsPage> {
               // Theme Section
               Text(
                 'Theme',
-                style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                style:
+                    textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 8),
               ListTile(
-                leading: Icon(Icons.dark_mode_rounded, color: highContrastTheme.primaryColor),
+                leading: Icon(Icons.dark_mode_rounded,
+                    color: highContrastTheme.primaryColor),
                 title: Text('Dark Mode', style: textTheme.bodyLarge),
-                subtitle: Text('Toggle between light and dark theme', style: textTheme.bodyMedium),
+                subtitle: Text('Toggle between light and dark theme',
+                    style: textTheme.bodyMedium),
                 trailing: Switch(
-                  value: _isDarkMode,
+                  value: isDarkMode,
                   onChanged: (value) {
-                    themeProvider.setThemeMode(value ? ThemeMode.dark : ThemeMode.light);
+                    themeProvider
+                        .setThemeMode(value ? ThemeMode.dark : ThemeMode.light);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Dark Mode: ${value ? 'On' : 'Off'}')),
+                      SnackBar(
+                          content: Text('Dark Mode: ${value ? 'On' : 'Off'}')),
                     );
                   },
                 ),
                 onTap: () {
-                  themeProvider.setThemeMode(_isDarkMode ? ThemeMode.light : ThemeMode.dark);
+                  themeProvider.setThemeMode(
+                      isDarkMode ? ThemeMode.light : ThemeMode.dark);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Dark Mode: ${_isDarkMode ? 'Off' : 'On'}')),
+                    SnackBar(
+                        content:
+                            Text('Dark Mode: ${isDarkMode ? 'Off' : 'On'}')),
                   );
                 },
               ),
@@ -78,13 +95,16 @@ class _SettingsPageState extends State<SettingsPage> {
               // Accessibility Section
               Text(
                 'Accessibility',
-                style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                style:
+                    textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 8),
               ListTile(
-                leading: Icon(Icons.text_fields_rounded, color: highContrastTheme.primaryColor),
+                leading: Icon(Icons.text_fields_rounded,
+                    color: highContrastTheme.primaryColor),
                 title: Text('Large Text', style: textTheme.bodyLarge),
-                subtitle: Text('Increase text size for better readability', style: textTheme.bodyMedium),
+                subtitle: Text('Increase text size for better readability',
+                    style: textTheme.bodyMedium),
                 onTap: () {
                   setState(() {
                     _largeText = !_largeText;
@@ -96,9 +116,11 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               Divider(color: Colors.grey.shade400, thickness: 1),
               ListTile(
-                leading: Icon(Icons.contrast_rounded, color: highContrastTheme.primaryColor),
+                leading: Icon(Icons.contrast_rounded,
+                    color: highContrastTheme.primaryColor),
                 title: Text('High Contrast', style: textTheme.bodyLarge),
-                subtitle: Text('Enhance visibility with high contrast colors', style: textTheme.bodyMedium),
+                subtitle: Text('Enhance visibility with high contrast colors',
+                    style: textTheme.bodyMedium),
                 onTap: () {
                   setState(() {
                     _highContrast = !_highContrast;
@@ -113,13 +135,16 @@ class _SettingsPageState extends State<SettingsPage> {
               // General Section
               Text(
                 'General',
-                style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                style:
+                    textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 8),
               ListTile(
-                leading: Icon(Icons.notifications_active_rounded, color: highContrastTheme.primaryColor),
+                leading: Icon(Icons.notifications_active_rounded,
+                    color: highContrastTheme.primaryColor),
                 title: Text('Notifications', style: textTheme.bodyLarge),
-                subtitle: Text('Check for app notifications', style: textTheme.bodyMedium),
+                subtitle: Text('Check for app notifications',
+                    style: textTheme.bodyMedium),
                 onTap: () {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('No new notifications')),

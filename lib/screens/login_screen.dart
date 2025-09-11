@@ -53,7 +53,8 @@ class _LoginPageState extends State<LoginPage> {
     setState(() => _isLoading = true);
     try {
       final response = await http.post(
-        Uri.parse('https://receipt-scanner-backend-0d53818d62b3.herokuapp.com/api/auth/login'),
+        Uri.parse(
+            'http://receipt-scanner-backend-production.up.railway.app/api/auth/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'username': username, 'password': password}),
       );
@@ -70,7 +71,8 @@ class _LoginPageState extends State<LoginPage> {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (_) => MainScreen(cameras: widget.cameras, userId: username),
+              builder: (_) =>
+                  MainScreen(cameras: widget.cameras, userId: username),
             ),
           );
         }
@@ -114,7 +116,11 @@ class _LoginPageState extends State<LoginPage> {
                 'Username',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w500,
-                      color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.8),
+                      color: Theme.of(context)
+                          .textTheme
+                          .bodyMedium
+                          ?.color
+                          ?.withOpacity(0.8),
                     ),
               ),
               const SizedBox(height: 6),
@@ -133,7 +139,11 @@ class _LoginPageState extends State<LoginPage> {
                 'Password',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w500,
-                      color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.8),
+                      color: Theme.of(context)
+                          .textTheme
+                          .bodyMedium
+                          ?.color
+                          ?.withOpacity(0.8),
                     ),
               ),
               const SizedBox(height: 6),
@@ -148,7 +158,8 @@ class _LoginPageState extends State<LoginPage> {
                   suffixIcon: IconButton(
                     icon: Icon(
                       _showPassword ? Icons.visibility : Icons.visibility_off,
-                      color: Theme.of(context).iconTheme.color?.withOpacity(0.6),
+                      color:
+                          Theme.of(context).iconTheme.color?.withOpacity(0.6),
                     ),
                     onPressed: () {
                       setState(() {
@@ -181,7 +192,9 @@ class _LoginPageState extends State<LoginPage> {
                     width: screenWidth * 0.55,
                     height: 55,
                     decoration: BoxDecoration(
-                      color: _isLoading ? Colors.grey : Theme.of(context).primaryColor,
+                      color: _isLoading
+                          ? Colors.grey
+                          : Theme.of(context).primaryColor,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Center(
@@ -205,7 +218,8 @@ class _LoginPageState extends State<LoginPage> {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const ForgotPasswordPage()),
+                      MaterialPageRoute(
+                          builder: (_) => const ForgotPasswordPage()),
                     );
                   },
                   child: Text(
@@ -228,7 +242,8 @@ class _LoginPageState extends State<LoginPage> {
                           context: context,
                           builder: (context) => AlertDialog(
                             title: const Text('Create Account'),
-                            content: const Text('Please contact an admin to create an account.'),
+                            content: const Text(
+                                'Please contact an admin to create an account.'),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.of(context).pop(),

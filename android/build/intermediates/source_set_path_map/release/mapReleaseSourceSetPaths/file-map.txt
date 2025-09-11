@@ -1,0 +1,7 @@
+io.flutter.receipt_scanner_plugin-pngs-0 C:\Users\ateeb\receipt-scanner-dashboard\android\build\generated\res\pngs\release
+io.flutter.receipt_scanner_plugin-resValues-1 C:\Users\ateeb\receipt-scanner-dashboard\android\build\generated\res\resValues\release
+io.flutter.receipt_scanner_plugin-mergeReleaseResources-2 C:\Users\ateeb\receipt-scanner-dashboard\android\build\intermediates\incremental\release\mergeReleaseResources\merged.dir
+io.flutter.receipt_scanner_plugin-mergeReleaseResources-3 C:\Users\ateeb\receipt-scanner-dashboard\android\build\intermediates\incremental\release\mergeReleaseResources\stripped.dir
+io.flutter.receipt_scanner_plugin-release-4 C:\Users\ateeb\receipt-scanner-dashboard\android\build\intermediates\merged_res\release\mergeReleaseResources
+io.flutter.receipt_scanner_plugin-main-5 C:\Users\ateeb\receipt-scanner-dashboard\android\src\main\res
+io.flutter.receipt_scanner_plugin-release-6 C:\Users\ateeb\receipt-scanner-dashboard\android\src\release\res

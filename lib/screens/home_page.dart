@@ -13,7 +13,8 @@ import 'dart:convert';
 import 'package:url_launcher/url_launcher.dart';
 
 // Configurable server URL
-const String serverUrl = 'https://receipt-scanner-backend-0d53818d62b3.herokuapp.com/api/receipts/process-receipt'; // For Android emulator
+const String serverUrl =
+    'http://receipt-scanner-backend-production.up.railway.app/api/receipts/process-receipt'; // For Android emulator
 // const String serverUrl = 'http://192.168.0.66:3001/ocr'; // For physical devices
 
 class HomePage extends StatelessWidget {
@@ -34,7 +35,8 @@ class HomePage extends StatelessWidget {
 
   Future<void> _uploadReceipts(BuildContext context) async {
     final ImagePicker picker = ImagePicker();
-    final TextRecognizer textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
+    final TextRecognizer textRecognizer =
+        TextRecognizer(script: TextRecognitionScript.latin);
 
     try {
       // Allow multiple image selection from gallery
@@ -48,23 +50,27 @@ class HomePage extends StatelessWidget {
 
           // Perform OCR on the image
           final inputImage = InputImage.fromFilePath(image.path);
-          final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
+          final RecognizedText recognizedText =
+              await textRecognizer.processImage(inputImage);
           final String rawText = recognizedText.text;
           print('OCR Text: $rawText'); // Log OCR output for debugging
 
           // Send the extracted text to the backend server
-          final response = await http.post(
+          final response = await http
+              .post(
             Uri.parse(serverUrl),
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode({'text': rawText}),
-          ).timeout(
+          )
+              .timeout(
             const Duration(seconds: 10), // Add timeout to catch network issues
             onTimeout: () {
               throw Exception('Request timed out. Check server at $serverUrl');
             },
           );
 
-          print('Server Response: Status ${response.statusCode}, Body: ${response.body}'); // Log server response
+          print(
+              'Server Response: Status ${response.statusCode}, Body: ${response.body}'); // Log server response
 
           if (response.statusCode == 200) {
             final String responseBody = response.body;
@@ -88,7 +94,8 @@ class HomePage extends StatelessWidget {
             }
           } else {
             Fluttertoast.showToast(
-              msg: 'Server error for image: ${response.statusCode}. Using local OCR parsing.',
+              msg:
+                  'Server error for image: ${response.statusCode}. Using local OCR parsing.',
             );
             // Fallback: Parse total locally
             String total = '0.00';
@@ -100,7 +107,8 @@ class HomePage extends StatelessWidget {
               if (text.contains('total') || text.contains('amount')) {
                 final lines = block.text.split('\n');
                 for (var line in lines) {
-                  final match = RegExp(r'(?:£|\$|€)?\s*(\d+\.\d{2})').firstMatch(line);
+                  final match =
+                      RegExp(r'(?:£|\$|€)?\s*(\d+\.\d{2})').firstMatch(line);
                   if (match != null) {
                     total = match.group(1) ?? '0.00';
                     break;
@@ -112,7 +120,9 @@ class HomePage extends StatelessWidget {
                 merchant = block.text.split('\n').first;
               }
               // Extract date (look for date patterns like DD/MM/YYYY or YYYY-MM-DD)
-              final dateMatch = RegExp(r'\d{1,2}/\d{1,2}/\d{2,4}|\d{4}-\d{2}-\d{2}').firstMatch(block.text);
+              final dateMatch =
+                  RegExp(r'\d{1,2}/\d{1,2}/\d{2,4}|\d{4}-\d{2}-\d{2}')
+                      .firstMatch(block.text);
               if (dateMatch != null) {
                 date = dateMatch.group(0);
               }
@@ -126,7 +136,9 @@ class HomePage extends StatelessWidget {
               currency: '£',
               total: total,
               category: 'General',
-              date: date != null ? DateTime.tryParse(date) ?? DateTime.now() : DateTime.now(),
+              date: date != null
+                  ? DateTime.tryParse(date) ?? DateTime.now()
+                  : DateTime.now(),
             );
 
             final confirmedResult = await Navigator.push<ReceiptEntry>(
@@ -164,11 +176,15 @@ class HomePage extends StatelessWidget {
           onNavigateToReceiptsTab();
 
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('${newEntries.length} receipt(s) uploaded successfully')),
+            SnackBar(
+                content: Text(
+                    '${newEntries.length} receipt(s) uploaded successfully')),
           );
         } else if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('No receipts were confirmed. Check server connection.')),
+            const SnackBar(
+                content: Text(
+                    'No receipts were confirmed. Check server connection.')),
           );
         }
       } else {
@@ -189,7 +205,8 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final customCardColor = isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF3F5F5);
+    final customCardColor =
+        isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF3F5F5);
     final iconColor = isDark ? Colors.white70 : Colors.black87;
 
     return SingleChildScrollView(
@@ -211,7 +228,8 @@ class HomePage extends StatelessWidget {
                       ),
                 ),
                 const SizedBox(width: 8),
-                Icon(Icons.waving_hand, color: Theme.of(context).primaryColor, size: 30),
+                Icon(Icons.waving_hand,
+                    color: Theme.of(context).primaryColor, size: 30),
               ],
             ),
           ),
@@ -256,20 +274,22 @@ class HomePage extends StatelessWidget {
                   iconColor: iconColor,
                   onTap: () => _uploadReceipts(context),
                 ),
-
                 _HomeActionCard(
                   title: 'View Analytics',
                   icon: CupertinoIcons.chart_bar_alt_fill,
                   iconColor: iconColor,
                   onTap: () async {
-                    const analyticsUrl = 'https://demo-analytics--receipt-scanner.netlify.app';
+                    const analyticsUrl =
+                        'https://demo-analytics--receipt-scanner.netlify.app';
                     final Uri url = Uri.parse(analyticsUrl);
                     if (await canLaunchUrl(url)) {
-                      await launchUrl(url, mode: LaunchMode.externalApplication);
+                      await launchUrl(url,
+                          mode: LaunchMode.externalApplication);
                     } else {
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Could not open analytics link')),
+                          const SnackBar(
+                              content: Text('Could not open analytics link')),
                         );
                       }
                     }
@@ -280,14 +300,17 @@ class HomePage extends StatelessWidget {
                   icon: CupertinoIcons.arrow_up_doc,
                   iconColor: iconColor,
                   onTap: () async {
-                    const exportUrl = 'https://demo-export--receipt-scanner.netlify.app';
+                    const exportUrl =
+                        'https://demo-export--receipt-scanner.netlify.app';
                     final Uri url = Uri.parse(exportUrl);
                     if (await canLaunchUrl(url)) {
-                      await launchUrl(url, mode: LaunchMode.externalApplication);
+                      await launchUrl(url,
+                          mode: LaunchMode.externalApplication);
                     } else {
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Could not open export link')),
+                          const SnackBar(
+                              content: Text('Could not open export link')),
                         );
                       }
                     }
@@ -304,7 +327,10 @@ class HomePage extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 27),
             child: Text(
               'Receipts',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context)
+                  .textTheme
+                  .titleLarge
+                  ?.copyWith(fontWeight: FontWeight.bold),
             ),
           ),
           const SizedBox(height: 10),
@@ -349,26 +375,29 @@ class ReceiptCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    final cardColor = isDark 
-        ? const Color(0xFF1C1C1E)
-        : Colors.white;
-    
-    final shadowColor = isDark 
-        ? Colors.black.withOpacity(0.3)
-        : Colors.black.withOpacity(0.06);
-    
-    final dateColor = isDark 
-        ? Colors.white60 
-        : const Color(0xFF8E8E93);
-    
-    final storeColor = isDark 
-        ? Colors.white54 
-        : const Color(0xFF8E8E93);
+
+    final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+
+    final shadowColor =
+        isDark ? Colors.black.withOpacity(0.3) : Colors.black.withOpacity(0.06);
+
+    final dateColor = isDark ? Colors.white60 : const Color(0xFF8E8E93);
+
+    final storeColor = isDark ? Colors.white54 : const Color(0xFF8E8E93);
 
     final months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
     ];
 
     return Material(
@@ -409,7 +438,7 @@ class ReceiptCard extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              
+
               // Amount
               Text(
                 '${entry.currency}${entry.total}',
@@ -421,12 +450,12 @@ class ReceiptCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 6),
-              
+
               // Store name with subtle background
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: isDark 
+                  color: isDark
                       ? Colors.white.withOpacity(0.08)
                       : const Color(0xFFF2F2F7),
                   borderRadius: BorderRadius.circular(6),
@@ -460,24 +489,19 @@ class _HomeActionCard extends StatelessWidget {
     required this.icon,
     required this.onTap,
     required this.iconColor,
-    super.key,
   });
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    final cardColor = isDark 
-        ? const Color(0xFF1C1C1E)
-        : Colors.white;
-    
-    final shadowColor = isDark 
-        ? Colors.black.withOpacity(0.3)
-        : Colors.black.withOpacity(0.08);
-    
-    final pressedColor = isDark
-        ? const Color(0xFF2C2C2E)
-        : const Color(0xFFF2F2F7);
+
+    final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+
+    final shadowColor =
+        isDark ? Colors.black.withOpacity(0.3) : Colors.black.withOpacity(0.08);
+
+    final pressedColor =
+        isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7);
 
     return GestureDetector(
       onTap: onTap,

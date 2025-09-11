@@ -1,3 +1,4 @@
+// Do NOT apply Android plugins here
 allprojects {
     repositories {
         google()
@@ -5,17 +6,21 @@ allprojects {
     }
 }
 
-val newBuildDir: Directory = rootProject.layout.buildDirectory.dir("../../build").get()
+// Optional: move build directories
+val newBuildDir = rootProject.layout.buildDirectory.dir("../../build").get()
 rootProject.layout.buildDirectory.value(newBuildDir)
 
 subprojects {
-    val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)
+    val newSubprojectBuildDir = newBuildDir.dir(project.name)
     project.layout.buildDirectory.value(newSubprojectBuildDir)
 }
+
+// Ensure :app module is evaluated first
 subprojects {
     project.evaluationDependsOn(":app")
 }
 
+// Root clean task
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }

@@ -1,0 +1,19 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.example.receipt_scanner.app-mergeReleaseResources-42:/values-v18/values-v18.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\ateeb\\.gradle\\caches\\8.12\\transforms\\605dd246f059858a3b8d9be5ed9be729\\transformed\\appcompat-1.6.1\\res\\values-v18\\values-v18.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "48",
+                        "endOffsets": "99"
+                    }
+                }
+            ]
+        }
+    ]
+}
