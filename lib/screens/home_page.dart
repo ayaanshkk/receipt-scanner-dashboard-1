@@ -13,7 +13,7 @@ import 'dart:convert';
 import 'package:url_launcher/url_launcher.dart';
 
 // Configurable server URL
-const String serverUrl = 'https://receipt-scanner-backend-0d53818d62b3.herokuapp.com/api/receipts/process-receipt';
+const String serverUrl = 'https://receipt-scanner-backend-yl7m.onrender.com/api/receipts/process-receipt';
 
 class HomePage extends StatelessWidget {
   final String userId;

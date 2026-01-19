@@ -53,7 +53,7 @@ class _LoginPageState extends State<LoginPage> {
     setState(() => _isLoading = true);
     try {
       final response = await http.post(
-        Uri.parse('https://receipt-scanner-backend-0d53818d62b3.herokuapp.com/api/auth/login'),
+        Uri.parse('https://receipt-scanner-backend-yl7m.onrender.com/api/auth/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'username': username, 'password': password}),
       );

@@ -125,7 +125,7 @@ class _ScanReceiptPageState extends State<ScanReceiptPage> {
       final String rawText = recognizedText.text;
 
       final response = await http.post(
-        Uri.parse('https://tartarous-nila-biblically.ngrok-free.dev/api/receipts/process-receipt'),
+        Uri.parse('https://receipt-scanner-backend-yl7m.onrender.com/api/receipts/process-receipt'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
