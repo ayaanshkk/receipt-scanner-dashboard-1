@@ -125,13 +125,18 @@ class _ScanReceiptPageState extends State<ScanReceiptPage> {
       final String rawText = recognizedText.text;
 
       final response = await http.post(
-        Uri.parse('https://receipt-scanner-backend-0d53818d62b3.herokuapp.com/api/receipts/process-receipt'), // Replace with actual URL
+        Uri.parse('https://tartarous-nila-biblically.ngrok-free.dev/api/receipts/process-receipt'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
         },
-        body: jsonEncode({'text': rawText}),
+        body: jsonEncode({'text': rawText, 'image': 'data:image/jpeg;base64,${base64Encode(await _capturedImageFile!.readAsBytes())}'}),
       );
+
+      // Validate response is JSON, not HTML
+      if (!response.headers['content-type']!.contains('application/json')) {
+        throw Exception('Server returned HTML instead of JSON. Check backend logs.');
+      }
 
       if (response.statusCode == 200) {
         final result = await Navigator.push<ReceiptEntry>(
